@@ -50,14 +50,14 @@ const Features = () => {
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="sm:text-4xl text-3xl font-bold text-gray-800 mb-4 hero-reveal">Why Choose SwiftWheel?</h2>
         <p className="text-gray-600 mb-12 max-w-2xl mx-auto text-lg hero-reveal">
-          We're committed to providing you with the best bike rental experience through our Effordable services and customer-first approach.
+          We're committed to providing you with the best vehicle rental experience through our Effordable services and customer-first approach.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="flex flex-col bg-white items-center text-center border border-gray-300 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-2 transition duration-300 reveal-y"
+              className="flex flex-col bg-white items-center text-center border border-gray-300 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-2 transition duration-200 reveal-y"
             >
               <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-500 mb-4 text-white">{feature.icon}</div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">{feature.title}</h3>

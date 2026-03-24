@@ -9,7 +9,7 @@ const Terms = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">Terms and Conditions – SwiftWheel</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Welcome to SwiftWheel. We provide premium rental services for bikes, mopeds, and cars across major cities in India. 
+            Welcome to SwiftWheel. We provide premium rental services for vehicles, mopeds, and cars across major cities in India. 
             By accessing our platform and booking vehicles, you agree to be bound by the terms and policies listed below. 
             Please read them carefully before starting your journey.
           </p>
@@ -28,7 +28,7 @@ const Terms = () => {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Eligibility</h2>
                 <ul className="list-disc pl-5 text-gray-600 space-y-2 leading-relaxed">
-                  <li>Users must be at least <strong>18 years old</strong> for renting two-wheelers (bikes and mopeds).</li>
+                  <li>Users must be at least <strong>18 years old</strong> for renting two-wheelers (vehicles and mopeds).</li>
                   <li>Users must be at least <strong>21 years old</strong> for renting cars.</li>
                   <li>A valid and original Indian driving license must be presented at the time of pickup.</li>
                 </ul>

@@ -14,8 +14,8 @@ const App = () => {
       <ScrollToTop />
       <Routes>
         <Route path='/*' element={<UserRoute />} />
-        {/* <Route path='/seller/*' element = {<SellerRoute />}/>
-        <Route path='/admin/*' element = {<AdminRoute />}/> */}
+        <Route path='/seller/*' element = {<SellerRoute />}/>
+        <Route path='/admin/*' element = {<AdminRoute />}/>
 
         <Route path='*' element={<NotFound />}></Route>
       </Routes>

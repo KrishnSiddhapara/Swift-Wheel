@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
-import { Car, Facebook, Twitter, Instagram, Phone, Mail, MapPin  } from 'lucide-react';
+import { LoaderPinwheel, Facebook, Twitter, Instagram, Phone, Mail, MapPin  } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -9,7 +9,7 @@ const Footer = () => {
         {/* Company Info */}
         <div>
           <Link to='/' className="flex items-center space-x-2">
-            <Car className="h-8 w-8 text-blue-500" />
+            <LoaderPinwheel className="h-8 w-8 text-blue-500" />
             <span className="text-xl font-bold">SwiftWheel</span>
           </Link>
           <p className="leading-relaxed my-4">
@@ -38,11 +38,11 @@ const Footer = () => {
         <div>
           <h4 className="text-white font-semibold mb-4">Services</h4>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:underline">Bikes</a></li>
-            <li><a href="#" className="hover:underline">Mopeds</a></li>
-            <li><a href="#" className="hover:underline">EVs</a></li>
-            <li><a href="#" className="hover:underline">Hourly rentals</a></li>
-            <li><a href="#" className="hover:underline">Long-term Rentals</a></li>
+            <li><Link to="/vehicles?category=Bikes" className="hover:underline">Bikes</Link></li>
+            <li><Link to="/vehicles?category=Mopeds" className="hover:underline">Mopeds</Link></li>
+            <li><Link to="/vehicles?category=Cars" className="hover:underline">Cars</Link></li>
+            <li><Link to="/vehicles" className="hover:underline">Hourly rentals</Link></li>
+            <li><Link to="/vehicles" className="hover:underline">Long-term Rentals</Link></li>
           </ul>
         </div>
 

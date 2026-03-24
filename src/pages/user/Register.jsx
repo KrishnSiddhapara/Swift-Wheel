@@ -1,8 +1,30 @@
-import React, { useEffect } from 'react'
-import { Facebook, Mail, Lock, Car, User,Instagram, Phone } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
+import { useData } from '../../context/DataProvider';
+import { Facebook, Mail, Lock, LoaderPinwheel, User,Instagram, Phone } from 'lucide-react';
 import ScrollReveal from 'scrollreveal';
 
 const Register = () => {
+    const navigate = useNavigate();
+    const { register } = useData();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [role, setRole] = useState('user');
+
+    const handleRegister = async (e) => {
+      e.preventDefault();
+      setError('');
+      try {
+        await register({ name, email, phone, password, role });
+        if (role === 'seller') navigate('/seller');
+        else navigate('/');
+      } catch (err) {
+        setError(err);
+      }
+    };
     useEffect(() => {
         ScrollReveal().reveal(".reveal-x", {
             origin: "left",
@@ -18,7 +40,7 @@ const Register = () => {
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="text-white text-3xl font-bold flex justify-center items-center gap-2">
-           <Car className='w-10 h-10' /> <span>SwiftWheel</span>
+           <LoaderPinwheel className='w-10 h-10' /> <span>SwiftWheel</span>
           </div>
         </div>
       <div className="w-full max-w-md bg-gray-100 rounded-lg shadow-lg p-8 pt-5 reveal-x">
@@ -28,7 +50,9 @@ const Register = () => {
         <p className="text-center text-gray-500 mb-6">Join thousands of happy customers</p>
 
         {/* Form */}
-        <form>
+        <form onSubmit={handleRegister}>
+        {error && <div className="mb-4 text-red-500 text-sm text-center font-medium bg-red-50 p-2 rounded">{error}</div>}
+
         {/* Name */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
@@ -36,6 +60,9 @@ const Register = () => {
               <User className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
                 placeholder="Enter your name"
                 className="w-full bg-white pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -49,6 +76,9 @@ const Register = () => {
               <Phone className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
                 placeholder="Enter your mobile number"
                 className="w-full bg-white pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -63,6 +93,9 @@ const Register = () => {
               <Mail className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 placeholder="Enter your email"
                 className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -76,9 +109,33 @@ const Register = () => {
               <Lock className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 placeholder="Enter your password"
                 className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+          </div>
+
+          {/* Role Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Register As</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole('user')}
+                className={`py-2 px-1 rounded-md text-sm font-medium border transition-colors ${role === 'user' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+              >
+                Customer
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('seller')}
+                className={`py-2 px-1 rounded-md text-sm font-medium border transition-colors ${role === 'seller' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+              >
+                Seller
+              </button>
             </div>
           </div>
 
@@ -117,7 +174,7 @@ const Register = () => {
 
         {/* Sign up link */}
         <p className="text-center text-sm text-gray-600 mt-6">
-          Don't have an account?{' '}
+          Already have an account?{' '}
           <a href="/login" className="text-blue-500 hover:underline">Log in</a>
         </p>
       </div>

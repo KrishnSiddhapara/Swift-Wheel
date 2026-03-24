@@ -8,7 +8,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Manual',
     location: 'Ahmedabad',
-    image: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2',
+    image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=500&auto=format&fit=crop',
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Manual',
     location: 'Mumbai',
-    image: 'https://images.unsplash.com/photo-1580310614729-ccd69652491d',
+    image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf801h?w=500&auto=format&fit=crop',
   },
   {
     id: 3,
@@ -30,7 +30,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Manual',
     location: 'Delhi',
-    image: 'https://images.unsplash.com/photo-1609630875171-b1321377ee65',
+    image: 'https://images.unsplash.com/photo-1588887857212-0fe9dcb7cd94?w=500&auto=format&fit=crop',
   },
   {
     id: 4,
@@ -63,7 +63,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Automatic',
     location: 'Ahmedabad',
-    image: 'https://images.unsplash.com/photo-1621314641113-7a3a0655e768',
+    image: 'https://images.unsplash.com/photo-1614064390543-02b489d2d0fc?w=500&auto=format&fit=crop', // Replace this if we want specific scooter, currently using generic scooter
   },
   {
     id: 7,
@@ -74,7 +74,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Automatic',
     location: 'Hyderabad',
-    image: 'https://images.unsplash.com/photo-1609630844475-4b09c0a7e4a6',
+    image: 'https://images.unsplash.com/photo-1614064390543-02b489d2d0fc?w=500&auto=format&fit=crop', // Same scooter as above
   },
   {
     id: 8,
@@ -107,7 +107,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Manual',
     location: 'Bangalore',
-    image: 'https://images.unsplash.com/photo-1549924231-f129b911e442',
+    image: 'https://images.unsplash.com/photo-1611016186353-9af58c69a533?w=500&auto=format&fit=crop',
   },
   {
     id: 11,
@@ -118,7 +118,7 @@ export const vehicles = [
     fuelType: 'Diesel',
     transmission: 'Automatic',
     location: 'Hyderabad',
-    image: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a',
+    image: 'https://images.unsplash.com/photo-1563720224160-bfe72e380e22?w=500&auto=format&fit=crop', // White SUV
   },
   {
     id: 12,
@@ -129,7 +129,7 @@ export const vehicles = [
     fuelType: 'Petrol',
     transmission: 'Manual',
     location: 'Pune',
-    image: 'https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9',
+    image: 'https://images.unsplash.com/photo-1503376766444-124b17e4bbd1?w=500&auto=format&fit=crop', // Dark SUV
   },
   {
     id: 13,
@@ -140,7 +140,7 @@ export const vehicles = [
     fuelType: 'Diesel',
     transmission: 'Automatic',
     location: 'Mumbai',
-    image: 'https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9',
+    image: 'https://images.unsplash.com/photo-1605985859338-7c85c2921bae?w=500&auto=format&fit=crop', // MPV style vehicle
   },
   {
     id: 14,
@@ -151,6 +151,17 @@ export const vehicles = [
     fuelType: 'Diesel',
     transmission: 'Manual',
     location: 'Ahmedabad',
-    image: 'https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9',
+    image: 'https://images.unsplash.com/photo-1563720311210-90fe3573e038?w=500&auto=format&fit=crop', // Offroad style vehicle
+  },
+   {
+    id: 15,
+    name: 'Mahindra Scorpio',
+    brand: 'Mahindra',
+    category: 'Car',
+    pricePerDay: 1600,
+    fuelType: 'Diesel',
+    transmission: 'Manual',
+    location: 'Ahmedabad',
+    image: 'https://images.unsplash.com/photo-1563720311210-90fe3573e038?w=500&auto=format&fit=crop', // Offroad style vehicle
   }
 ];

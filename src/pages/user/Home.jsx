@@ -4,10 +4,8 @@ import PopularVehicles from '../../components/PopularVehicles'
 
 import Features from '../../components/Features'
 import Footer from '../../components/Footer'
-import { useData } from '../../context/DataProvider'
 
 const Home = () => {
-  // const {count} = useData();
   return <>
   {/* Hello : {count} */}
     <Hero />

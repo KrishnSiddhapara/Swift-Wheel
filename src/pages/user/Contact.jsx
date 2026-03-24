@@ -8,7 +8,7 @@ const Contact = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Contact SwiftWheel</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Have questions about our bike rentals? We are here to help you ride smart and rent fast.
+            Have questions about our vehicle rentals? We are here to help you ride smart and rent fast.
           </p>
         </div>
 

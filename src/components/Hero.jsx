@@ -1,8 +1,5 @@
 import React, { useEffect } from 'react'
-import { MapPin } from 'lucide-react';
-import { Calendar } from 'lucide-react';
-import { Clock } from 'lucide-react';
-import { Search } from 'lucide-react';
+import SearchBar from './SearchBar';
 
 //Scroll Reveal
 import ScrollReveal from 'scrollreveal';
@@ -49,51 +46,7 @@ const Hero = () => {
         Discover amazing deals on quality vehicles. Book now and drive away with confidence.
       </p>
 
-      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-5 gap-4 items-end text-black hero-reveal">
-        {/* Pickup Location */}
-        <div>
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-            <MapPin className='w-5 h-5' /> <span>Pickup Location</span>
-          </label>
-          <select className="w-full p-2 border border-gray-300 rounded cursor-pointer">
-            <option>Select city</option>
-            <option>Mumbai</option>
-            <option>Ahmedabad</option>
-            <option>Surat</option>
-          </select>
-        </div>
-
-        {/* Pickup Date */}
-        <div>
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-            <Calendar className='w-5 h-5' /> <span>Pickup Date</span>
-          </label>
-          <input type="date" className="w-full p-2 border border-gray-300 rounded cursor-pointer" />
-        </div>
-
-        {/* Pickup Time */}
-        <div>
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-            <Clock className='w-5 h-5' /> <span>Pickup Time</span>
-          </label>
-          <input type='time' className="w-full p-2 border border-gray-300 rounded cursor-pointer" />
-        </div>
-
-        {/* Return Date */}
-        <div>
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-            <Calendar className='w-5 h-5' /> <span>Return Date</span>
-          </label>
-          <input type="date" className="w-full p-2 border border-gray-300 rounded" />
-        </div>
-
-        {/* Button */}
-        <div>
-          <button className="flex items-center justify-center gap-2 w-full cursor-pointer bg-blue-500 text-white p-2 rounded hover:bg-blue-700 transition duration-300">
-            <Search className='w-5 h-5' /> <span>Search Rides</span>
-          </button>
-        </div>
-      </div>
+      <SearchBar />
 
       {/* Stats */}
       <div className="mt-16 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-white hero-reveal">
