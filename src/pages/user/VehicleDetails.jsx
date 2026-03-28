@@ -12,15 +12,15 @@ const VehicleDetails = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useData();
-    
+
     const [vehicle, setVehicle] = useState(null);
     const [loading, setLoading] = useState(true);
     const [mainImageIndex, setMainImageIndex] = useState(0);
-    
+
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [pickupLocation, setPickupLocation] = useState('');
-    
+
     const [calculatedPrice, setCalculatedPrice] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
@@ -31,7 +31,7 @@ const VehicleDetails = () => {
         if (location.state?.bookingState) {
             setStartDate(location.state.bookingState.startDate);
             setEndDate(location.state.bookingState.endDate);
-            if(location.state.bookingState.pickupLocation) {
+            if (location.state.bookingState.pickupLocation) {
                 setPickupLocation(location.state.bookingState.pickupLocation);
             }
         }
@@ -78,6 +78,34 @@ const VehicleDetails = () => {
         }
     }, [startDate, endDate, vehicle]);
 
+  const cities = [
+    'Ahmedabad', 'Mumbai', 'Delhi', 'Bangalore', 
+    'Pune', 'Hyderabad', 'Chennai', 'Kolkata'
+  ];
+
+    const filterStartTime = (time) => {
+        const now = new Date();
+        const selectedDate = startDate ? new Date(startDate) : new Date();
+        if (selectedDate.toDateString() === now.toDateString()) {
+            return time.getTime() > now.getTime();
+        }
+        return true;
+    };
+
+    const filterEndTime = (time) => {
+        const now = new Date();
+        const selectedStartDate = startDate ? new Date(startDate) : new Date();
+        const selectedEndDate = endDate ? new Date(endDate) : new Date();
+
+        if (selectedEndDate.toDateString() === selectedStartDate.toDateString()) {
+            return time.getTime() > selectedStartDate.getTime();
+        }
+        if (selectedEndDate.toDateString() === now.toDateString()) {
+            return time.getTime() > now.getTime();
+        }
+        return true;
+    };
+
     const handleBooking = async (e) => {
         e.preventDefault();
         setError('');
@@ -85,11 +113,11 @@ const VehicleDetails = () => {
 
         if (!user) {
             // Not logged in -> Redirect to login page and pass return URL & state
-            navigate('/login', { 
-                state: { 
+            navigate('/login', {
+                state: {
                     from: location.pathname,
                     bookingState: { startDate, endDate, pickupLocation }
-                } 
+                }
             });
             return;
         }
@@ -117,7 +145,7 @@ const VehicleDetails = () => {
         }
 
         setIsProcessing(true);
-        
+
         // Minor delay for UX
         setTimeout(() => {
             setIsProcessing(false);
@@ -147,7 +175,7 @@ const VehicleDetails = () => {
             <div className="min-h-screen bg-gray-50 py-20 px-4 text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">Vehicle not found</h2>
                 <button onClick={() => navigate(-1)} className="text-blue-600 font-semibold hover:underline flex items-center justify-center mx-auto">
-                    <ArrowLeft className="w-5 h-5 mr-2"/> Go Back
+                    <ArrowLeft className="w-5 h-5 mr-2" /> Go Back
                 </button>
             </div>
         );
@@ -157,22 +185,22 @@ const VehicleDetails = () => {
         <div className="bg-gray-50 min-h-screen py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-blue-600 font-semibold mb-6 flex items-center transition-colors">
-                    <ArrowLeft className="w-5 h-5 mr-2"/> Back to Vehicles
+                    <ArrowLeft className="w-5 h-5 mr-2" /> Back to Vehicles
                 </button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    
+
                     {/* Left Column: Vehicle Info */}
                     <div className="lg:col-span-2 space-y-8">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
                         >
                             <div className="w-full">
                                 <div className="aspect-[16/9] w-full bg-gray-100 relative rounded-t-2xl overflow-hidden">
-                                    <img 
-                                        src={(vehicle.images && vehicle.images[mainImageIndex]) ? (vehicle.images[mainImageIndex].startsWith('/') ? `http://localhost:5000${vehicle.images[mainImageIndex]}` : vehicle.images[mainImageIndex]) : (vehicle.image && vehicle.image.startsWith('/') ? `http://localhost:5000${vehicle.image}` : vehicle.image)} 
+                                    <img
+                                        src={(vehicle.images && vehicle.images[mainImageIndex]) ? (vehicle.images[mainImageIndex].startsWith('/') ? `http://localhost:5000${vehicle.images[mainImageIndex]}` : vehicle.images[mainImageIndex]) : (vehicle.image && vehicle.image.startsWith('/') ? `http://localhost:5000${vehicle.image}` : vehicle.image)}
                                         alt={vehicle.vehicleName}
                                         className="w-full h-full object-cover"
                                     />
@@ -183,8 +211,8 @@ const VehicleDetails = () => {
                                 {vehicle.images && vehicle.images.length > 1 && (
                                     <div className="flex gap-2 p-4 bg-gray-50 border-x border-gray-100">
                                         {vehicle.images.map((img, idx) => (
-                                            <button 
-                                                key={idx} 
+                                            <button
+                                                key={idx}
                                                 onClick={() => setMainImageIndex(idx)}
                                                 className={`h-20 w-24 rounded-lg overflow-hidden border-2 ${mainImageIndex === idx ? 'border-blue-600' : 'border-transparent'} transition-all`}
                                             >
@@ -194,7 +222,7 @@ const VehicleDetails = () => {
                                     </div>
                                 )}
                             </div>
-                            
+
                             <div className="p-8">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
@@ -215,19 +243,19 @@ const VehicleDetails = () => {
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 border-y border-gray-100 mb-8">
                                     <div className="flex flex-col">
-                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><Fuel className="w-4 h-4 mr-1"/> Fuel</span>
+                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><Fuel className="w-4 h-4 mr-1" /> Fuel</span>
                                         <span className="font-semibold text-gray-800">{vehicle.fuelType || 'Petrol'}</span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><Cog className="w-4 h-4 mr-1"/> Transmission</span>
+                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><Cog className="w-4 h-4 mr-1" /> Transmission</span>
                                         <span className="font-semibold text-gray-800">{vehicle.transmission || 'Manual'}</span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><ShieldCheck className="w-4 h-4 mr-1"/> Category</span>
+                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><ShieldCheck className="w-4 h-4 mr-1" /> Category</span>
                                         <span className="font-semibold text-gray-800">{vehicle.category}</span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><IndianRupee className="w-4 h-4 mr-1"/> Per Hour</span>
+                                        <span className="text-gray-400 text-sm mb-1 flex items-center"><IndianRupee className="w-4 h-4 mr-1" /> Per Hour</span>
                                         <span className="font-semibold text-gray-800">₹{vehicle.pricePerHour}</span>
                                     </div>
                                     <div className="flex flex-col">
@@ -255,14 +283,14 @@ const VehicleDetails = () => {
                     </div>
 
                     {/* Right Column: Checkout Form */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="lg:col-span-1"
                     >
                         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 sticky top-10">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Book this Vehicle</h2>
-                            
+
                             {successMessage && (
                                 <div className="mb-6 bg-green-50 border border-green-200 text-green-700 py-3 px-4 rounded-lg flex items-center font-medium">
                                     <CheckCircle2 className="w-5 h-5 mr-2 flex-shrink-0" />
@@ -279,14 +307,28 @@ const VehicleDetails = () => {
                             <form onSubmit={handleBooking} className="space-y-5">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup Location</label>
-                                    <input 
+                                    {/* <input 
                                         type="text"
                                         required
                                         className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                         value={pickupLocation}
                                         onChange={(e) => setPickupLocation(e.target.value)}
                                         placeholder="City or Airport"
-                                    />
+                                    /> */}
+                                    <div className="relative">
+                                        <select
+                                            name="location"
+                                            value={pickupLocation}
+                                            onChange={(e) => setPickupLocation(e.target.value)}
+
+                                            className="w-full p-2.5 pl-3 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 appearance-none outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80"
+                                        >
+                                            <option value="" disabled>Select city</option>
+                                            {cities.map((city) => (
+                                                <option key={city} value={city}>{city}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="space-y-4">
                                     {/* Pickup Group */}
@@ -297,7 +339,7 @@ const VehicleDetails = () => {
                                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
                                                     <Calendar className="h-4 w-4 text-gray-400" />
                                                 </div>
-                                                <DatePicker 
+                                                <DatePicker
                                                     selected={startDate ? new Date(startDate) : null}
                                                     onChange={(date) => setStartDate(date)}
                                                     dateFormat="MMM d, yyyy"
@@ -311,7 +353,7 @@ const VehicleDetails = () => {
                                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
                                                     <Clock className="h-4 w-4 text-gray-400" />
                                                 </div>
-                                                <DatePicker 
+                                                <DatePicker
                                                     selected={startDate ? new Date(startDate) : null}
                                                     onChange={(date) => setStartDate(date)}
                                                     showTimeSelect
@@ -322,6 +364,7 @@ const VehicleDetails = () => {
                                                     placeholderText="Select Time"
                                                     className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm font-medium shadow-sm"
                                                     required
+                                                    filterTime={filterStartTime}
                                                 />
                                             </div>
                                         </div>
@@ -335,7 +378,7 @@ const VehicleDetails = () => {
                                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
                                                     <Calendar className="h-4 w-4 text-gray-400" />
                                                 </div>
-                                                <DatePicker 
+                                                <DatePicker
                                                     selected={endDate ? new Date(endDate) : null}
                                                     onChange={(date) => setEndDate(date)}
                                                     dateFormat="MMM d, yyyy"
@@ -349,7 +392,7 @@ const VehicleDetails = () => {
                                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
                                                     <Clock className="h-4 w-4 text-gray-400" />
                                                 </div>
-                                                <DatePicker 
+                                                <DatePicker
                                                     selected={endDate ? new Date(endDate) : null}
                                                     onChange={(date) => setEndDate(date)}
                                                     showTimeSelect
@@ -360,6 +403,7 @@ const VehicleDetails = () => {
                                                     placeholderText="Select Time"
                                                     className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm font-medium shadow-sm"
                                                     required
+                                                    filterTime={filterEndTime}
                                                 />
                                             </div>
                                         </div>
@@ -374,14 +418,13 @@ const VehicleDetails = () => {
                                             {calculatedPrice.toLocaleString('en-IN')}
                                         </span>
                                     </div>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         disabled={isProcessing || calculatedPrice === 0}
-                                        className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md transition-all flex justify-center items-center ${
-                                            isProcessing || calculatedPrice === 0 
-                                            ? 'bg-blue-400 cursor-not-allowed' 
-                                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 transform active:scale-[0.98]'
-                                        }`}
+                                        className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md transition-all flex justify-center items-center cursor-pointer ${isProcessing || calculatedPrice === 0
+                                                ? 'bg-blue-400 cursor-not-allowed'
+                                                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 transform active:scale-[0.98]'
+                                            }`}
                                     >
                                         {isProcessing ? (
                                             <>

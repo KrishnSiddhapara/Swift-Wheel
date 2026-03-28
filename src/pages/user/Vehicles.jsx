@@ -68,6 +68,16 @@ const Vehicles = () => {
         }
     };
 
+    const getMinDateTimeLocal = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
     return (
         <div className="bg-gray-50 min-h-screen py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,6 +120,7 @@ const Vehicles = () => {
                                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
+                                min={getMinDateTimeLocal()}
                             />
                         </div>
                         <div className="flex flex-col">
@@ -119,6 +130,7 @@ const Vehicles = () => {
                                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
+                                min={startDate || getMinDateTimeLocal()}
                             />
                         </div>
                         <div className="flex flex-col">
@@ -136,7 +148,7 @@ const Vehicles = () => {
                             </select>
                         </div>
                         <div className="flex flex-col">
-                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg px-4 py-2.5 shadow-md shadow-blue-500/30 transition-all transform active:scale-95">
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg px-4 py-2.5 shadow-md shadow-blue-500/30 transition-all transform active:scale-95 cursor-pointer">
                                 Search Filter
                             </button>
                         </div>
