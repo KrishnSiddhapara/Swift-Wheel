@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Car, CalendarCheck, BarChart3, MapPin, Trophy } from 'lucide-react';
 import api from '../../api/axios';
 import { motion } from 'framer-motion';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -48,9 +49,9 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <div className="space-y-8 bg-gray-50 min-h-screen p-8 rounded-3xl">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Analytics Dashboard</h1>
+        <div className="space-y-6 md:space-y-8 bg-gray-50 min-h-[calc(100vh-64px)] p-4 sm:p-6 md:p-8 rounded-xl md:rounded-3xl max-w-[100vw] overflow-hidden">
+            <div className="flex justify-between items-center mb-2 md:mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Analytics Dashboard</h1>
             </div>
 
             <motion.div 
@@ -81,6 +82,59 @@ const AdminDashboard = () => {
                 ))}
             </motion.div>
 
+            {/* Charts Section */}
+            {stats?.monthlyTrends && stats.monthlyTrends.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    {/* Revenue Trend Line Chart */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8"
+                    >
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">Revenue Trend</h2>
+                        <div className="h-72 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={stats.monthlyTrends}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dx={-10} tickFormatter={(value) => `₹${value}`} />
+                                    <Tooltip 
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        formatter={(value) => [`₹${value}`, 'Revenue']}
+                                    />
+                                    <Line type="monotone" dataKey="revenue" stroke="#2563EB" strokeWidth={3} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Bookings Trend Bar Chart */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8"
+                    >
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">Booking Analytics</h2>
+                        <div className="h-72 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats.monthlyTrends}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dx={-10} />
+                                    <Tooltip 
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        cursor={{fill: '#F3F4F6'}}
+                                    />
+                                    <Bar dataKey="bookings" fill="#8B5CF6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
                 {/* Most Rented Vehicle */}
                 <motion.div 
@@ -96,8 +150,8 @@ const AdminDashboard = () => {
                         <h2 className="text-xl font-bold text-gray-900">Most Rented Vehicle</h2>
                     </div>
                     {stats?.mostRentedVehicle ? (
-                        <div className="flex items-center gap-6">
-                            <div className="w-32 h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6">
+                            <div className="w-full sm:w-32 h-40 sm:h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                                 {stats.mostRentedVehicle.image ? (
                                     <img 
                                         src={stats.mostRentedVehicle.image.startsWith('/') ? `http://localhost:5000${stats.mostRentedVehicle.image}` : stats.mostRentedVehicle.image} 

@@ -51,13 +51,13 @@ const Footer = () => {
           <h4 className="text-white font-semibold mb-4">Contact Us</h4>
           <ul className="space-y-3">
             <li className="flex items-center gap-2">
-              <Phone className="text-blue-400 w-5 h-5" /> +1 (555) 123-4567
+              <Phone className="text-blue-400 w-5 h-5" /> +91 7587654356
             </li>
             <li className="flex items-center gap-2">
               <Mail className="text-blue-400 w-5 h-5" /> info@swiftwheel.com
             </li>
             <li className="flex items-center gap-2">
-              <MapPin className="text-blue-400 w-5 h-5" /> 123 Main St, City, State 12345
+              <MapPin className="text-blue-400 w-5 h-5" /> 1103 ,Enstin , Science city road, Ahmedabad-380060
             </li>
           </ul>
         </div>

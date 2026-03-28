@@ -107,28 +107,31 @@ const VehicleDetails = () => {
             return setError('Return date must be after pickup date.');
         }
 
-        setIsProcessing(true);
-
-        try {
-            // 1. Create Booking
-            const bookingRes = await api.post('/bookings', {
-                vehicleId: vehicle._id,
-                pickupLocation,
-                startDate: start.toISOString(),
-                endDate: end.toISOString()
-            });
-
-            const bookingId = bookingRes.data._id;
-            
-            // 2. Redirect to Payment Page
-            navigate(`/payment/${bookingId}`);
-
-        } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || 'Failed to process booking.');
-        } finally {
-            setIsProcessing(false);
+        const hours = (Math.abs(end - start) / (1000 * 60 * 60));
+        if (vehicle.category === 'Car') {
+            if (hours < 4) return setError('Car bookings require a minimum of 4 hours.');
+            if (hours > 144) return setError('Car bookings cannot exceed 6 days (144 hrs).');
+        } else if (vehicle.category === 'Bike' || vehicle.category === 'Moped') {
+            if (hours < 2) return setError(`${vehicle.category} bookings require a minimum of 2 hours.`);
+            if (hours > 72) return setError(`${vehicle.category} bookings cannot exceed 3 days (72 hrs).`);
         }
+
+        setIsProcessing(true);
+        
+        // Minor delay for UX
+        setTimeout(() => {
+            setIsProcessing(false);
+            navigate(`/booking/${vehicle._id}`, {
+                state: {
+                    bookingState: {
+                        startDate: start.toISOString(),
+                        endDate: end.toISOString(),
+                        pickupLocation,
+                        calculatedPrice
+                    }
+                }
+            });
+        }, 500);
     };
 
     if (loading) {
@@ -386,7 +389,7 @@ const VehicleDetails = () => {
                                                 Processing...
                                             </>
                                         ) : (
-                                            'Book Now & Pay'
+                                            'Proceed to Booking'
                                         )}
                                     </button>
                                 </div>

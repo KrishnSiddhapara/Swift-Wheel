@@ -20,7 +20,7 @@ const Vehicles = () => {
     const fetchVehicles = async () => {
         setLoading(true);
         try {
-            const params = {};
+            const params = { pageSize: 100 };
             if (selectedCategory && selectedCategory !== 'All Vehicles') {
                 params.category = selectedCategory;
             }

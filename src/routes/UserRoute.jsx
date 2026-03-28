@@ -12,6 +12,11 @@ import VehicleDetails from '../pages/user/VehicleDetails'
 import Terms from '../pages/user/Terms'
 import Payment from '../pages/user/Payment'
 import PaymentStatus from '../pages/user/PaymentStatus'
+import BookingCheckout from '../pages/user/BookingCheckout'
+import UserDashboardLayout from '../pages/user/dashboard/UserDashboardLayout'
+import UserDashboard from '../pages/user/dashboard/UserDashboard'
+import MyBookings from '../pages/user/dashboard/MyBookings'
+import UserProfile from '../pages/user/dashboard/UserProfile'
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useData();
@@ -39,7 +44,29 @@ const UserRoute = () => {
                         </ProtectedRoute>
                     } 
                 />
+                <Route 
+                    path='/booking/:vehicleId' 
+                    element={
+                        <ProtectedRoute>
+                            <BookingCheckout />
+                        </ProtectedRoute>
+                    } 
+                />
                 <Route path='/payment-status' element={<PaymentStatus />} />
+
+                {/* User Dashboard Routes */}
+                <Route
+                    path='/user'
+                    element={
+                        <ProtectedRoute>
+                            <UserDashboardLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route path='dashboard' element={<UserDashboard />} />
+                    <Route path='bookings' element={<MyBookings />} />
+                    <Route path='profile' element={<UserProfile />} />
+                </Route>
             </Route>
         </Routes>
     )
