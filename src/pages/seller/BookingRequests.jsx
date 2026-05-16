@@ -4,8 +4,11 @@ import { motion } from 'framer-motion';
 import api from '../../api/axios';
 import { useModal } from '../../context/ModalContext';
 import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
+import Pagination from '../../components/Pagination';
 
 const BookingRequests = () => {
+    const { showAlert } = useModal();
     const { showAlert } = useModal();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,11 +23,16 @@ const BookingRequests = () => {
     useEffect(() => {
         const fetchBookings = async () => {
             setLoading(true);
+            setLoading(true);
             try {
                 const params = { page: currentPage, limit: itemsPerPage };
                 const { data } = await api.get('/seller/bookings', { params });
                 
+                const params = { page: currentPage, limit: itemsPerPage };
+                const { data } = await api.get('/seller/bookings', { params });
+                
                 // Sort to show pending first, then by date descending
+                const sortedData = data.data.sort((a, b) => {
                 const sortedData = data.data.sort((a, b) => {
                     if (a.bookingStatus === 'Pending' && b.bookingStatus !== 'Pending') return -1;
                     if (a.bookingStatus !== 'Pending' && b.bookingStatus === 'Pending') return 1;
@@ -34,7 +42,13 @@ const BookingRequests = () => {
                 setBookings(sortedData);
                 setTotalPages(data.totalPages);
                 setTotalItems(data.totalItems);
+                });
+                
+                setBookings(sortedData);
+                setTotalPages(data.totalPages);
+                setTotalItems(data.totalItems);
             } catch (err) {
+                showAlert('Failed to fetch bookings', 'error');
                 showAlert('Failed to fetch bookings', 'error');
             } finally {
                 setLoading(false);
@@ -42,13 +56,16 @@ const BookingRequests = () => {
         };
         fetchBookings();
     }, [currentPage]);
+    }, [currentPage]);
 
     const handleUpdateStatus = async (id, status) => {
         try {
             await api.put(`/seller/bookings/${id}`, { status });
             setBookings(bookings.map(b => b._id === id ? { ...b, bookingStatus: status } : b));
             showAlert(`Booking status updated to ${status}`, 'success');
+            showAlert(`Booking status updated to ${status}`, 'success');
         } catch (err) {
+            showAlert('Failed to update booking status', 'error');
             showAlert('Failed to update booking status', 'error');
         }
     };

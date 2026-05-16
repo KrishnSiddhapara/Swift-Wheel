@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useData } from '../../context/DataProvider';
 import { Facebook, Mail, Lock, LoaderPinwheel, User,Instagram, Phone } from 'lucide-react';
 import ScrollReveal from 'scrollreveal';
 
 const Register = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { register } = useData();
+    const from = location.state?.from || '/';
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -20,7 +22,7 @@ const Register = () => {
       try {
         await register({ name, email, phone, password, role });
         if (role === 'seller') navigate('/seller');
-        else navigate('/');
+        else navigate(from);
       } catch (err) {
         setError(err);
       }
@@ -160,7 +162,7 @@ const Register = () => {
         {/* Sign up link */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Already have an account?{' '}
-          <a href="/login" className="text-blue-500 hover:underline">Log in</a>
+          <Link to="/login" state={{ from }} className="text-blue-500 hover:underline">Log in</Link>
         </p>
       </div>
     </div>

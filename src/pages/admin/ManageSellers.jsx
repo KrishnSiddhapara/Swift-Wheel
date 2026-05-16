@@ -4,12 +4,20 @@ import api from '../../api/axios';
 import { motion } from 'framer-motion';
 import Pagination from '../../components/Pagination';
 import { useModal } from '../../context/ModalContext';
+import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
 
 const ManageSellers = () => {
+    const { showConfirm, showAlert } = useModal();
     const { showConfirm, showAlert } = useModal();
     const [sellers, setSellers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -22,10 +30,25 @@ const ManageSellers = () => {
         }, 300);
         return () => clearTimeout(delayDebounceFn);
     }, [currentPage, searchTerm]);
+        const delayDebounceFn = setTimeout(() => {
+            fetchSellers();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [currentPage, searchTerm]);
 
     const fetchSellers = async () => {
         setLoading(true);
+        setLoading(true);
         try {
+            const params = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm
+            };
+            const { data } = await api.get('/admin/sellers', { params });
+            setSellers(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
             const params = {
                 page: currentPage,
                 limit: itemsPerPage,
@@ -54,9 +77,17 @@ const ManageSellers = () => {
         );
         
         if (confirmed) {
+        const confirmed = await showConfirm(
+            `Are you sure you want to ${confirmMsg}`,
+            `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} Seller`,
+            'warning'
+        );
+        
+        if (confirmed) {
             try {
                 if (actionType === 'delete') {
                     await api.delete(`/admin/sellers/${sellerId}`);
+                    showAlert('Seller deleted successfully', 'success');
                     showAlert('Seller deleted successfully', 'success');
                 } else if (actionType === 'approve') {
                     await api.patch(`/admin/sellers/${sellerId}/approve`);
@@ -69,10 +100,12 @@ const ManageSellers = () => {
             } catch (error) {
                 console.error(`Error processing seller action: ${actionType}`, error);
                 showAlert(`Failed to ${actionType} seller`, 'error');
+                showAlert(`Failed to ${actionType} seller`, 'error');
             }
         }
     };
 
+    const filteredSellers = sellers;
     const filteredSellers = sellers;
 
     if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
@@ -88,6 +121,7 @@ const ManageSellers = () => {
                         placeholder="Search seller..."
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-gray-50/50"
                         value={searchTerm}
+                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                     />
                 </div>
@@ -165,6 +199,7 @@ const ManageSellers = () => {
                                             </button>
                                         )}
                                         <button className="cursor-pointer" 
+                                        <button className="cursor-pointer" 
                                             onClick={() => handleAction(seller._id, 'delete')}
                                             title="Delete Seller"
                                             className="p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
@@ -187,6 +222,14 @@ const ManageSellers = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
 
             <Pagination 
                 currentPage={currentPage}

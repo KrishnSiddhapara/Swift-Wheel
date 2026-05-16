@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Ban, Eye, CalendarCheck, MapPin, XCircle } from 'lucide-react';
+import { Search, Ban, Eye, CalendarCheck, MapPin, XCircle } from 'lucide-react';
 import api from '../../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import Pagination from '../../components/Pagination';
 import { useModal } from '../../context/ModalContext';
+import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
 
 const ManageBookings = () => {
+    const { showConfirm, showAlert } = useModal();
     const { showConfirm, showAlert } = useModal();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,13 +21,25 @@ const ManageBookings = () => {
     const [totalItems, setTotalItems] = useState(0);
     const itemsPerPage = 10;
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         fetchBookings();
+    }, [currentPage]);
     }, [currentPage]);
 
     const fetchBookings = async () => {
         setLoading(true);
+        setLoading(true);
         try {
+            const params = { page: currentPage, limit: itemsPerPage };
+            const { data } = await api.get('/admin/bookings', { params });
+            setBookings(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
             const params = { page: currentPage, limit: itemsPerPage };
             const { data } = await api.get('/admin/bookings', { params });
             setBookings(data.data);
@@ -43,9 +59,16 @@ const ManageBookings = () => {
             "warning"
         );
         if (!confirmed) return;
+        const confirmed = await showConfirm(
+            "Are you sure you want to forcibly cancel this booking?",
+            "Force Cancel Booking",
+            "warning"
+        );
+        if (!confirmed) return;
         
         try {
             await api.put(`/admin/bookings/${bookingId}/cancel`);
+            showAlert('Booking cancelled successfully', 'success');
             showAlert('Booking cancelled successfully', 'success');
             fetchBookings();
             if (selectedBooking && selectedBooking._id === bookingId) {
@@ -53,6 +76,7 @@ const ManageBookings = () => {
             }
         } catch (error) {
             console.error("Error cancelling booking", error);
+            showAlert('Failed to cancel booking', 'error');
             showAlert('Failed to cancel booking', 'error');
         }
     };
@@ -162,6 +186,14 @@ const ManageBookings = () => {
                 onPageChange={setCurrentPage}
             />
 
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
+
             {/* Quick Details Modal */}
             <AnimatePresence>
                 {selectedBooking && (
@@ -174,6 +206,7 @@ const ManageBookings = () => {
                         >
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h3 className="text-xl font-bold text-gray-900">Booking Details</h3>
+                                <button className="cursor-pointer" onClick={() => setSelectedBooking(null)} className="text-gray-400 hover:text-gray-600 transition-colors"><XCircle size={24} /></button>
                                 <button className="cursor-pointer" onClick={() => setSelectedBooking(null)} className="text-gray-400 hover:text-gray-600 transition-colors"><XCircle size={24} /></button>
                             </div>
                             <div className="p-6 space-y-4">
@@ -211,7 +244,9 @@ const ManageBookings = () => {
                             </div>
                             <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
                                 <button className="cursor-pointer" onClick={() => setSelectedBooking(null)} className="px-6 py-2 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors">Close</button>
+                                <button className="cursor-pointer" onClick={() => setSelectedBooking(null)} className="px-6 py-2 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors">Close</button>
                                 {selectedBooking.bookingStatus !== 'Cancelled' && selectedBooking.bookingStatus !== 'Completed' && (
+                                    <button className="cursor-pointer" onClick={() => { handleCancel(selectedBooking._id); setSelectedBooking(null); }} className="px-6 py-2 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition-all shadow-md shadow-red-500/20">Force Cancel</button>
                                     <button className="cursor-pointer" onClick={() => { handleCancel(selectedBooking._id); setSelectedBooking(null); }} className="px-6 py-2 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition-all shadow-md shadow-red-500/20">Force Cancel</button>
                                 )}
                             </div>

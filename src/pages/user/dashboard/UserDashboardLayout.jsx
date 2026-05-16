@@ -17,7 +17,7 @@ const UserDashboardLayout = () => {
 
   const navItems = [
     { name: 'Overview', path: '/user/dashboard', icon: LayoutDashboard },
-    { name: 'My Bookings', path: '/user/bookings', icon: List },
+    { name: 'My Bookings', path: '/my-bookings', icon: List },
     { name: 'Profile', path: '/user/profile', icon: User },
   ];
 

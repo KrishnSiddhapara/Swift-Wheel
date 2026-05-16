@@ -5,12 +5,14 @@ import { useData } from '../../context/DataProvider';
 import { Image as ImageIcon, CheckCircle2, ShieldCheck, FileCheck, Info, AlertCircle, ChevronRight, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useModal } from '../../context/ModalContext';
+import { useModal } from '../../context/ModalContext';
 
 const BookingCheckout = () => {
     const { vehicleId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { user } = useData();
+    const { showAlert } = useModal();
     const { showAlert } = useModal();
 
     // Data State
@@ -31,6 +33,8 @@ const BookingCheckout = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const [step, setStep] = useState('filling'); // filling, uploading, creating, redirecting
+    const [checkoutErrorMode, setCheckoutErrorMode] = useState(null); // null | 'payment_init'
+    const [savedBookingId, setSavedBookingId] = useState(null);
 
     useEffect(() => {
         if (!location.state?.bookingState) {
@@ -60,6 +64,7 @@ const BookingCheckout = () => {
         // Validation
         if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
             return showAlert('Please upload only an image or a PDF file.', 'error');
+            return showAlert('Please upload only an image or a PDF file.', 'error');
         }
 
         if (type === 'dl') {
@@ -87,17 +92,18 @@ const BookingCheckout = () => {
 
         setIsProcessing(true);
         setError('');
+        setCheckoutErrorMode(null);
+        setSavedBookingId(null);
 
+        let bookingId;
         try {
             setStep('uploading');
-            // 1. Upload Documents
             const [dlUrl, voterUrl] = await Promise.all([
                 uploadDocument(drivingLicense),
                 uploadDocument(voterId)
             ]);
 
             setStep('creating');
-            // 2. Create Booking
             const bookingPayload = {
                 vehicleId,
                 pickupLocation: bookingState.pickupLocation,
@@ -116,7 +122,6 @@ const BookingCheckout = () => {
             console.log("Booking created successfully. ID:", bookingId, "Amount:", finalAmount);
 
             setStep('redirecting');
-            // 3. Initiate Payment
             const res = await api.post('/payments/create-order', { bookingId });
             const { paymentSessionId, orderId: cfOrderId } = res.data;
 
@@ -146,7 +151,6 @@ const BookingCheckout = () => {
                 setIsProcessing(false);
                 setStep('filling');
             }
-
         } catch (err) {
             console.error("Booking/Payment Error:", err);
             setError(err.response?.data?.message || err.message || 'Error processing your request.');
@@ -164,6 +168,39 @@ const BookingCheckout = () => {
     }
 
     if (!vehicle || !bookingState) return null;
+
+    if (checkoutErrorMode === 'payment_init' && savedBookingId) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-16 px-4">
+                <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+                    <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-4" />
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Documents uploaded</h1>
+                    <p className="text-gray-600 mb-2">
+                        Your booking was created, but we could not open the payment window.
+                    </p>
+                    {error && (
+                        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-6">{error}</p>
+                    )}
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/my-bookings')}
+                            className="cursor-pointer px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-md"
+                        >
+                            Go to My Bookings
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate(`/payment/${savedBookingId}`)}
+                            className="cursor-pointer px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-800 hover:bg-gray-50"
+                        >
+                            Try payment again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const isFormValid = termsAccepted && drivingLicense && voterId;
 
@@ -354,6 +391,30 @@ const BookingCheckout = () => {
                                     <p className="text-xs text-gray-500 mt-2 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50 flex items-center gap-1.5">
                                         <Info size={14} className="text-blue-500 flex-shrink-0" /> Security Deposit is fully refundable after ride completion
                                     </p>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Rental Cost</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.basePrice.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Platform Fee</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.platformFee.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>GST</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.gstAmount.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Security Deposit</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.securityDeposit.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="border-t border-gray-100 pt-3 mt-3">
+                                    <div className="flex justify-between text-xl font-black text-gray-900">
+                                        <span>Total Payable</span>
+                                        <span className="text-blue-600">₹{bookingState.priceBreakdown.totalAmount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50 flex items-center gap-1.5">
+                                        <Info size={14} className="text-blue-500 flex-shrink-0" /> Security Deposit is fully refundable after ride completion
+                                    </p>
                                 </div>
                             </div>
 
@@ -384,6 +445,7 @@ const BookingCheckout = () => {
                                         {step === 'filling' && 'Processing...'}
                                     </>
                                 ) : (
+                                    <>Pay ₹{bookingState.priceBreakdown.totalAmount.toLocaleString('en-IN')} <ChevronRight size={20} /></>
                                     <>Pay ₹{bookingState.priceBreakdown.totalAmount.toLocaleString('en-IN')} <ChevronRight size={20} /></>
                                 )}
                             </button>

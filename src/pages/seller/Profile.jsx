@@ -3,8 +3,10 @@ import api from '../../api/axios';
 import { User, Mail, Phone, MapPin, KeyRound, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useModal } from '../../context/ModalContext';
+import { useModal } from '../../context/ModalContext';
 
 const Profile = () => {
+  const { showAlert } = useModal();
   const { showAlert } = useModal();
   const [profile, setProfile] = useState({ name: '', email: '', phone: '', city: '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -16,6 +18,7 @@ const Profile = () => {
         const { data } = await api.get('/auth/profile');
         setProfile({ name: data.name || '', email: data.email || '', phone: data.phone || '', city: data.city || '' });
       } catch (err) {
+        showAlert('Failed to fetch profile.', 'error');
         showAlert('Failed to fetch profile.', 'error');
       } finally {
         setLoading(false);
@@ -29,7 +32,9 @@ const Profile = () => {
     try {
       await api.put('/auth/profile', profile);
       showAlert('Profile updated successfully!', 'success');
+      showAlert('Profile updated successfully!', 'success');
     } catch (err) {
+      showAlert(err.response?.data?.message || 'Error updating profile', 'error');
       showAlert(err.response?.data?.message || 'Error updating profile', 'error');
     }
   };
@@ -38,12 +43,14 @@ const Profile = () => {
     e.preventDefault();
     if (password.newPassword !== password.confirmPassword) {
       return showAlert('Passwords do not match', 'error');
+      return showAlert('Passwords do not match', 'error');
     }
     try {
       await api.put('/auth/password', { currentPassword: password.currentPassword, newPassword: password.newPassword });
       showAlert('Password updated successfully!', 'success');
       setPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
+      showAlert(err.response?.data?.message || 'Error updating password', 'error');
       showAlert(err.response?.data?.message || 'Error updating password', 'error');
     }
   };
@@ -93,6 +100,7 @@ const Profile = () => {
               </div>
             </div>
             <button type="submit" className="cursor-pointer w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-medium transition-colors shadow-md shadow-emerald-500/20">
+            <button type="submit" className="cursor-pointer w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-medium transition-colors shadow-md shadow-emerald-500/20">
               <Save size={18} /> Update Profile
             </button>
           </form>
@@ -113,6 +121,7 @@ const Profile = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
               <input type="password" className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm" value={password.confirmPassword} onChange={(e) => setPassword({ ...password, confirmPassword: e.target.value })} required minLength="6" />
             </div>
+            <button type="submit" className="cursor-pointer w-full bg-gray-900 hover:bg-gray-800 text-white py-2.5 px-4 rounded-xl font-medium transition-colors">
             <button type="submit" className="cursor-pointer w-full bg-gray-900 hover:bg-gray-800 text-white py-2.5 px-4 rounded-xl font-medium transition-colors">
               Update Password
             </button>
