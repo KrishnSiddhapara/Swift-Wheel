@@ -3,8 +3,10 @@ import { Wallet, TrendingUp, CalendarDays, Receipt } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../../api/axios';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useModal } from '../../context/ModalContext';
 
 const Earnings = () => {
+    const { showAlert } = useModal();
     const [earningsData, setEarningsData] = useState({ totalEarnings: 0, completedBookings: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -15,7 +17,7 @@ const Earnings = () => {
                 const { data } = await api.get('/seller/earnings');
                 setEarningsData(data);
             } catch (err) {
-                setError('Failed to fetch earnings data');
+                showAlert('Failed to fetch earnings data', 'error');
             } finally {
                 setLoading(false);
             }
@@ -33,7 +35,6 @@ const Earnings = () => {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">Earnings Dashboard</h1>
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-200">{error}</div>}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-gray-900 text-white p-6 rounded-2xl shadow-lg shadow-gray-900/20 relative overflow-hidden">

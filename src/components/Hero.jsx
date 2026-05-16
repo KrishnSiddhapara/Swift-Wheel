@@ -11,7 +11,7 @@ const Hero = () => {
       duration: 1000,
       easing: 'ease-in-out',
       origin: 'left',
-      reset: false, 
+      reset: false,
     });
   }, []);
 

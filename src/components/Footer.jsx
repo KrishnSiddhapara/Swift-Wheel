@@ -41,8 +41,7 @@ const Footer = () => {
             <li><Link to="/vehicles?category=Bikes" className="hover:underline">Bikes</Link></li>
             <li><Link to="/vehicles?category=Mopeds" className="hover:underline">Mopeds</Link></li>
             <li><Link to="/vehicles?category=Cars" className="hover:underline">Cars</Link></li>
-            <li><Link to="/vehicles" className="hover:underline">Hourly rentals</Link></li>
-            <li><Link to="/vehicles" className="hover:underline">Long-term Rentals</Link></li>
+         
           </ul>
         </div>
 
@@ -57,7 +56,7 @@ const Footer = () => {
               <Mail className="text-blue-400 w-5 h-5" /> info@swiftwheel.com
             </li>
             <li className="flex items-center gap-2">
-              <MapPin className="text-blue-400 w-5 h-5" /> 1103 ,Enstin , Science city road, Ahmedabad-380060
+              <MapPin className="text-blue-400 w-5 h-5" />Science city road, Ahmedabad-380060
             </li>
           </ul>
         </div>
@@ -67,7 +66,7 @@ const Footer = () => {
       <div className="border-t border-gray-700 mt-10 pt-6 text-sm flex flex-col sm:flex-row justify-between items-center text-gray-500">
         <p>&copy; {new Date().getFullYear()} SwiftWheel. All rights reserved.</p>
         <div className="flex gap-4 mt-4 sm:mt-0">
-          <Link to="/terms" className="hover:underline">Privacy Policy</Link>
+          <Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link>
           <Link to="/terms" className="hover:underline">Terms of Service</Link>
         </div>
       </div>

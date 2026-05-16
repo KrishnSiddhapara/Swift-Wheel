@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../../api/axios';
-import { CheckCircle2, XCircle, Loader } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader, ClipboardList } from 'lucide-react';
 
 const PaymentStatus = () => {
     const [searchParams] = useSearchParams();
@@ -22,7 +22,7 @@ const PaymentStatus = () => {
             try {
                 const res = await api.post('/payments/verify', { orderId, bookingId });
                 setStatus('success');
-                setMessage(res.data.message || 'Payment successful!');
+                setMessage('Your booking has been confirmed successfully.');
             } catch (err) {
                 setStatus('failed');
                 setMessage(err.response?.data?.message || 'Payment verification failed.');
@@ -47,8 +47,8 @@ const PaymentStatus = () => {
                         <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
                         <p className="text-gray-600 mb-6">{message}</p>
-                        <Link to="/vehicles" className="bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 shadow-md text-white py-2 px-6 rounded-lg font-semibold transition-all">
-                            Back to Home
+                        <Link to="/my-bookings" className="bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 shadow-md text-white py-2 px-6 rounded-lg font-semibold transition-all flex items-center gap-2">
+                            <ClipboardList size={20} /> View My Bookings
                         </Link>
                     </div>
                 )}

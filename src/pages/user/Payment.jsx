@@ -21,7 +21,7 @@ const Payment = () => {
                 
                 cashfree.checkout({
                     paymentSessionId: paymentSessionId,
-                    returnUrl: `http://localhost:5173/payment-status?order_id={order_id}&booking_id=${bookingId}`
+                    returnUrl: `${window.location.origin}/payment-status?order_id={order_id}&booking_id=${bookingId}`
                 });
             } else {
                 setError('Cashfree SDK not loaded.');

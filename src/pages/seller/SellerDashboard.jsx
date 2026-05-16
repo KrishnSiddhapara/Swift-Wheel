@@ -3,8 +3,10 @@ import { CarFront, CalendarDays, Wallet, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../../api/axios';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useModal } from '../../context/ModalContext';
 
 const SellerDashboard = () => {
+    const { showAlert } = useModal();
     const [stats, setStats] = useState({ totalVehicles: 0, totalBookings: 0, totalEarnings: 0, activeRentals: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -18,17 +20,23 @@ const SellerDashboard = () => {
                     api.get('/seller/earnings')
                 ]);
 
-                const activeRentals = bookingsRes.data.filter(b => b.status === 'Ongoing' || b.status === 'Confirmed').length;
+                const vehiclesData = vehiclesRes.data.data || [];
+                const bookingsData = bookingsRes.data.data || [];
+                const earningsData = earningsRes.data || { totalEarnings: 0 };
+
+                const activeRentals = bookingsData.filter(b => 
+                    b.bookingStatus === 'Ongoing' || b.bookingStatus === 'Confirmed'
+                ).length;
 
                 setStats({
-                    totalVehicles: vehiclesRes.data.length || 0,
-                    totalBookings: bookingsRes.data.length || 0,
-                    totalEarnings: earningsRes.data.totalEarnings || 0,
+                    totalVehicles: vehiclesRes.data.totalItems || vehiclesData.length,
+                    totalBookings: bookingsRes.data.totalItems || bookingsData.length,
+                    totalEarnings: earningsData.totalEarnings || 0,
                     activeRentals
                 });
             } catch (err) {
                 console.error(err);
-                setError('Failed to fetch dashboard data.');
+                showAlert('Failed to fetch dashboard data.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -54,7 +62,6 @@ const SellerDashboard = () => {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">Seller Dashboard</h1>
-            {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6">{error}</div>}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((stat, index) => (

@@ -56,13 +56,22 @@ const Contact = () => {
           <div className="md:col-span-3 bg-white rounded-xl shadow-md p-8 border border-gray-100">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h3>
             
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={(e) => {
+              e.preventDefault();
+              const name = e.target.name.value;
+              const email = e.target.email.value;
+              const subject = e.target.subject.value;
+              const message = e.target.message.value;
+              const mailtoLink = `mailto:support@swiftwheel.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
+              window.location.href = mailtoLink;
+            }}>
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                   <input 
                     type="text" 
                     id="name" 
+                    name="name"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                     placeholder="Your Full Name"
                     required
@@ -73,6 +82,7 @@ const Contact = () => {
                   <input 
                     type="email" 
                     id="email" 
+                    name="email"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                     placeholder="you@example.com"
                     required
@@ -85,6 +95,7 @@ const Contact = () => {
                 <input 
                   type="text" 
                   id="subject" 
+                  name="subject"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                   placeholder="How can we help?"
                   required
@@ -95,6 +106,7 @@ const Contact = () => {
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Message</label>
                 <textarea 
                   id="message" 
+                  name="message"
                   rows="5"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
                   placeholder="Write your message here..."

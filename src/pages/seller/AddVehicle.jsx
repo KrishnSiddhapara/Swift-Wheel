@@ -3,8 +3,10 @@ import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { CarFront, UploadCloud, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useModal } from '../../context/ModalContext';
 
 const AddVehicle = () => {
+    const { showAlert } = useModal();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         vehicleName: '', brand: '', category: 'Car',
@@ -14,8 +16,6 @@ const AddVehicle = () => {
     const [images, setImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,7 +24,7 @@ const AddVehicle = () => {
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 5) {
-            setError('You can only upload up to 5 images');
+            showAlert('You can only upload up to 5 images', 'warning');
             return;
         }
         if (files.length > 0) {
@@ -37,10 +37,9 @@ const AddVehicle = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         if (images.length === 0) {
-            setError('Please upload at least one vehicle image (up to 5)');
+            showAlert('Please upload at least one vehicle image (up to 5)', 'warning');
             setLoading(false);
             return;
         }
@@ -53,31 +52,17 @@ const AddVehicle = () => {
             await api.post('/seller/vehicles', data, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setSuccess(true);
-            setTimeout(() => navigate('/seller/vehicles'), 2000);
+            await showAlert('Vehicle Added Successfully!', 'success');
+            navigate('/seller/vehicles');
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to add vehicle');
+            showAlert(err.response?.data?.message || 'Failed to add vehicle', 'error');
             setLoading(false);
         }
     };
 
-    if (success) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[500px] text-center">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle size={40} />
-                </motion.div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Vehicle Added Successfully!</h2>
-                <p className="text-gray-500">Redirecting to your vehicle list...</p>
-            </div>
-        );
-    }
-
     return (
         <div className="max-w-5xl mx-auto space-y-8">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">Add New Vehicle</h1>
-
-            {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200">{error}</div>}
 
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -176,7 +161,7 @@ const AddVehicle = () => {
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 flex justify-end">
-                    <button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-8 rounded-xl font-bold transition-colors shadow-md shadow-emerald-500/20 flex items-center gap-2">
+                    <button type="submit" disabled={loading} className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-8 rounded-xl font-bold transition-colors shadow-md shadow-emerald-500/20 flex items-center gap-2">
                         {loading ? <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span> : <><CarFront size={20} /> Publish Vehicle</>}
                     </button>
                 </div>

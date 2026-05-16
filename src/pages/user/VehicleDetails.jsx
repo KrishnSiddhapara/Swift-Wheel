@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../api/axios';
-import { IndianRupee, MapPin, Fuel, Cog, ArrowLeft, ShieldCheck, CheckCircle2, Calendar, Clock } from 'lucide-react';
+import { IndianRupee, MapPin, Fuel, Cog, ArrowLeft, ShieldCheck, CheckCircle2, Calendar, Clock, Bell, Ban } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useData } from '../../context/DataProvider';
+import { useVehicleRealtime } from '../../context/useVehicleRealtime';
+import { formatDistanceToNow } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -21,10 +23,16 @@ const VehicleDetails = () => {
     const [endDate, setEndDate] = useState('');
     const [pickupLocation, setPickupLocation] = useState('');
 
-    const [calculatedPrice, setCalculatedPrice] = useState(0);
+    const [priceBreakdown, setPriceBreakdown] = useState(null);
+    const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+
+    const { availabilityStatus, expectedAvailableAt } = useVehicleRealtime(vehicle);
+    const isUnavailable = availabilityStatus === 'unavailable';
+    const isAvailableSoon = availabilityStatus === 'available_soon';
+    const isAvailable = availabilityStatus === 'available' || !availabilityStatus;
 
     // Restore booking state if returning from login
     useEffect(() => {
@@ -55,33 +63,46 @@ const VehicleDetails = () => {
     }, [id, location.state]);
 
     useEffect(() => {
-        if (startDate && endDate && vehicle) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            if (end > start) {
-                const hours = Math.ceil((end - start) / (1000 * 60 * 60));
-                let total = 0;
-                if (hours < 24) {
-                    total = vehicle.pricePerHour * (hours || 1);
+        const fetchPriceCalculation = async () => {
+            if (startDate && endDate && vehicle) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                if (end > start) {
+                    setIsCalculatingPrice(true);
+                    try {
+                        const { data } = await api.post('/bookings/calculate-price', {
+                            vehicleId: vehicle._id,
+                            startDate,
+                            endDate
+                        });
+                        setPriceBreakdown(data);
+                        setError('');
+                    } catch (err) {
+                        console.error('Error calculating price', err);
+                        setPriceBreakdown(null);
+                        setError(err.response?.data?.message || 'Error calculating price');
+                    } finally {
+                        setIsCalculatingPrice(false);
+                    }
                 } else {
-                    const days = Math.ceil(hours / 24);
-                    total = vehicle.pricePerDay * days;
+                    setPriceBreakdown(null);
+                    if (startDate !== '' && endDate !== '') {
+                        setError('Return date must be after pickup date');
+                    }
                 }
-                setCalculatedPrice(total);
-                setError('');
             } else {
-                setCalculatedPrice(0);
-                if (startDate !== '' && endDate !== '') {
-                    setError('Return date must be after pickup date');
-                }
+                setPriceBreakdown(null);
             }
-        }
+        };
+
+        const debounceTimer = setTimeout(() => {
+            fetchPriceCalculation();
+        }, 500);
+
+        return () => clearTimeout(debounceTimer);
     }, [startDate, endDate, vehicle]);
 
-  const cities = [
-    'Ahmedabad', 'Mumbai', 'Delhi', 'Bangalore', 
-    'Pune', 'Hyderabad', 'Chennai', 'Kolkata'
-  ];
+
 
     const filterStartTime = (time) => {
         const now = new Date();
@@ -106,6 +127,19 @@ const VehicleDetails = () => {
         return true;
     };
 
+    const handleNotifyMe = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post('/api/interactions/notify', { vehicleId: vehicle._id || vehicle.id });
+            alert("You will be notified when it's available.");
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.message || "Failed to request notification.");
+        }
+    };
+
+
+
     const handleBooking = async (e) => {
         e.preventDefault();
         setError('');
@@ -116,13 +150,13 @@ const VehicleDetails = () => {
             navigate('/login', {
                 state: {
                     from: location.pathname,
-                    bookingState: { startDate, endDate, pickupLocation }
+                    bookingState: { startDate, endDate, pickupLocation: vehicle.location }
                 }
             });
             return;
         }
 
-        if (!startDate || !endDate || !pickupLocation) {
+        if (!startDate || !endDate || !vehicle.location) {
             return setError('Please fill all booking details.');
         }
 
@@ -154,8 +188,8 @@ const VehicleDetails = () => {
                     bookingState: {
                         startDate: start.toISOString(),
                         endDate: end.toISOString(),
-                        pickupLocation,
-                        calculatedPrice
+                        pickupLocation: vehicle.location,
+                        priceBreakdown
                     }
                 }
             });
@@ -174,7 +208,7 @@ const VehicleDetails = () => {
         return (
             <div className="min-h-screen bg-gray-50 py-20 px-4 text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">Vehicle not found</h2>
-                <button onClick={() => navigate(-1)} className="text-blue-600 font-semibold hover:underline flex items-center justify-center mx-auto">
+                <button className="cursor-pointer" onClick={() => navigate(-1)} className="text-blue-600 font-semibold hover:underline flex items-center justify-center mx-auto">
                     <ArrowLeft className="w-5 h-5 mr-2" /> Go Back
                 </button>
             </div>
@@ -184,7 +218,7 @@ const VehicleDetails = () => {
     return (
         <div className="bg-gray-50 min-h-screen py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-blue-600 font-semibold mb-6 flex items-center transition-colors">
+                <button className="cursor-pointer" onClick={() => navigate(-1)} className="text-gray-500 hover:text-blue-600 font-semibold mb-6 flex items-center transition-colors">
                     <ArrowLeft className="w-5 h-5 mr-2" /> Back to Vehicles
                 </button>
 
@@ -211,7 +245,7 @@ const VehicleDetails = () => {
                                 {vehicle.images && vehicle.images.length > 1 && (
                                     <div className="flex gap-2 p-4 bg-gray-50 border-x border-gray-100">
                                         {vehicle.images.map((img, idx) => (
-                                            <button
+                                            <button className="cursor-pointer"
                                                 key={idx}
                                                 onClick={() => setMainImageIndex(idx)}
                                                 className={`h-20 w-24 rounded-lg overflow-hidden border-2 ${mainImageIndex === idx ? 'border-blue-600' : 'border-transparent'} transition-all`}
@@ -307,27 +341,16 @@ const VehicleDetails = () => {
                             <form onSubmit={handleBooking} className="space-y-5">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup Location</label>
-                                    {/* <input 
-                                        type="text"
-                                        required
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                        value={pickupLocation}
-                                        onChange={(e) => setPickupLocation(e.target.value)}
-                                        placeholder="City or Airport"
-                                    /> */}
                                     <div className="relative">
-                                        <select
-                                            name="location"
-                                            value={pickupLocation}
-                                            onChange={(e) => setPickupLocation(e.target.value)}
-
-                                            className="w-full p-2.5 pl-3 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 appearance-none outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80"
-                                        >
-                                            <option value="" disabled>Select city</option>
-                                            {cities.map((city) => (
-                                                <option key={city} value={city}>{city}</option>
-                                            ))}
-                                        </select>
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                                            <MapPin size={18} className="text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={vehicle.location || 'Location Not Available'}
+                                            readOnly
+                                            className="w-full pl-10 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-600 font-medium cursor-not-allowed outline-none"
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-4">
@@ -412,29 +435,48 @@ const VehicleDetails = () => {
 
                                 <div className="pt-6 border-t border-gray-100 mt-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <span className="text-gray-600 font-medium">Total Price</span>
+                                        <span className="text-gray-600 font-medium">Approx. Total</span>
                                         <span className="text-2xl font-black text-gray-900 flex items-center">
                                             <IndianRupee className="w-5 h-5 -mr-1" />
-                                            {calculatedPrice.toLocaleString('en-IN')}
+                                            {isCalculatingPrice ? (
+                                                <span className="text-gray-400 text-lg ml-2 animate-pulse">Calculating...</span>
+                                            ) : (
+                                                priceBreakdown ? priceBreakdown.totalAmount.toLocaleString('en-IN') : 0
+                                            )}
                                         </span>
                                     </div>
-                                    <button
-                                        type="submit"
-                                        disabled={isProcessing || calculatedPrice === 0}
-                                        className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md transition-all flex justify-center items-center cursor-pointer ${isProcessing || calculatedPrice === 0
-                                                ? 'bg-blue-400 cursor-not-allowed'
-                                                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 transform active:scale-[0.98]'
-                                            }`}
-                                    >
-                                        {isProcessing ? (
-                                            <>
-                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-r-transparent mr-2"></div>
-                                                Processing...
-                                            </>
-                                        ) : (
-                                            'Proceed to Booking'
-                                        )}
-                                    </button>
+                                    
+                                    {isAvailable && (
+                                        <button
+                                            type="submit"
+                                            disabled={isProcessing || !startDate || !endDate || !priceBreakdown || isCalculatingPrice}
+                                            className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md transition-all flex justify-center items-center ${isProcessing || !startDate || !endDate || !priceBreakdown || isCalculatingPrice
+                                                    ? 'bg-blue-400 cursor-not-allowed shadow-none'
+                                                    : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 transform active:scale-[0.98] cursor-pointer'
+                                                }`}
+                                        >
+                                            {isProcessing || isCalculatingPrice ? (
+                                                <>
+                                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-r-transparent mr-2"></div>
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                'Proceed to Booking'
+                                            )}
+                                        </button>
+                                    )}
+
+
+
+                                    {isAvailableSoon && (
+                                        <button
+                                            type="button"
+                                            onClick={handleNotifyMe}
+                                            className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md transition-all flex justify-center items-center cursor-pointer bg-yellow-500 hover:bg-yellow-600`}
+                                        >
+                                            <Bell className="w-5 h-5 mr-2" /> Notify Me ({expectedAvailableAt ? formatDistanceToNow(new Date(expectedAvailableAt)) : 'soon'})
+                                        </button>
+                                    )}
                                 </div>
                             </form>
                             <p className="text-xs text-gray-400 mt-4 text-center">

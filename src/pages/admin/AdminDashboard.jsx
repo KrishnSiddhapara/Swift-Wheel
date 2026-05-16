@@ -3,8 +3,10 @@ import { Users, Car, CalendarCheck, BarChart3, MapPin, Trophy } from 'lucide-rea
 import api from '../../api/axios';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useModal } from '../../context/ModalContext';
 
 const AdminDashboard = () => {
+    const { showAlert } = useModal();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -16,7 +18,7 @@ const AdminDashboard = () => {
                 setStats(data);
             } catch (err) {
                 console.error(err);
-                setError('Failed to fetch dashboard data.');
+                showAlert('Failed to fetch dashboard data.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -32,20 +34,11 @@ const AdminDashboard = () => {
         );
     }
 
-    if (error) {
-        return (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200">
-                {error}
-            </div>
-        );
-    }
-
     const statCards = [
         { title: 'Total Users', value: stats?.totalUsers || 0, icon: <Users size={24} className="text-blue-500" />, trend: 'Active' },
         { title: 'Total Sellers', value: stats?.totalSellers || 0, icon: <Users size={24} className="text-purple-500" />, trend: 'Partners' },
         { title: 'Total Vehicles', value: stats?.totalVehicles || 0, icon: <Car size={24} className="text-emerald-500" />, trend: 'Fleet' },
         { title: 'Total Bookings', value: stats?.totalBookings || 0, icon: <CalendarCheck size={24} className="text-amber-500" />, trend: 'Transactions' },
-        { title: 'Total Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString()}`, icon: <BarChart3 size={24} className="text-rose-500" />, trend: 'Earnings' },
     ];
 
     return (
@@ -58,7 +51,7 @@ const AdminDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             >
                 {statCards.map((stat, index) => (
                     <motion.div 

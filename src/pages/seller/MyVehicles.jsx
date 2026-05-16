@@ -3,51 +3,82 @@ import { Pencil, Trash2, Search, PlusCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../../api/axios';
+import { useModal } from '../../context/ModalContext';
+import Pagination from '../../components/Pagination';
 
 const MyVehicles = () => {
+    const { showAlert, showConfirm } = useModal();
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState('');
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
     const fetchVehicles = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/seller/vehicles');
-            setVehicles(data);
+            const params = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm
+            };
+            const { data } = await api.get('/seller/vehicles', { params });
+            setVehicles(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
         } catch (err) {
-            setError('Failed to fetch vehicles');
+            showAlert('Failed to fetch vehicles', 'error');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchVehicles();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchVehicles();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [currentPage, searchTerm]);
 
     const toggleAvailability = async (id, currentStatus) => {
         try {
             await api.put(`/seller/vehicles/${id}`, { availability: !currentStatus });
             setVehicles(vehicles.map(v => v._id === id ? { ...v, availability: !currentStatus } : v));
+            showAlert(`Vehicle marked as ${!currentStatus ? 'Available' : 'Unavailable'}`, 'success');
         } catch (err) {
-            alert('Failed to update availability');
+            showAlert('Failed to update availability', 'error');
         }
     };
 
     const deleteVehicle = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this vehicle?')) return;
+        const confirmed = await showConfirm(
+            'Are you sure you want to delete this vehicle? This action cannot be undone.', 
+            'Delete Vehicle', 
+            'warning'
+        );
+        if (!confirmed) return;
+
         try {
             await api.delete(`/seller/vehicles/${id}`);
             setVehicles(vehicles.filter(v => v._id !== id));
+            showAlert('Vehicle deleted successfully', 'success');
         } catch (err) {
-            alert('Failed to delete vehicle');
+            showAlert('Failed to delete vehicle', 'error');
         }
     };
 
-    const filteredVehicles = vehicles.filter(v => 
-        v.vehicleName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        v.brand.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const getImageUrl = (vehicle) => {
+        let img = vehicle.images?.[0] || vehicle.image || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=600";
+        if (img.startsWith('/uploads')) return `http://localhost:5000${img}`;
+        if (img.startsWith('uploads')) return `http://localhost:5000/${img}`;
+        return img;
+    };
+
+    const filteredVehicles = vehicles;
 
     if (loading) return <div className="flex justify-center items-center h-[500px]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div></div>;
 
@@ -64,7 +95,7 @@ const MyVehicles = () => {
                             placeholder="Search vehicles..." 
                             className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
                     <Link to="/seller/add-vehicle" className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-xl flex items-center gap-2 font-medium text-sm transition-colors shadow-md shadow-emerald-500/20 whitespace-nowrap">
@@ -72,8 +103,6 @@ const MyVehicles = () => {
                     </Link>
                 </div>
             </div>
-
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-200">{error}</div>}
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -95,7 +124,7 @@ const MyVehicles = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-16 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
-                                                    <img src={vehicle.images && vehicle.images.length > 0 ? `http://localhost:5000${vehicle.images[0]}` : `http://localhost:5000${vehicle.image}`} alt={vehicle.vehicleName} className="w-full h-full object-cover" />
+                                                    <img src={getImageUrl(vehicle)} alt={vehicle.vehicleName} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=600'; }} />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-gray-900">{vehicle.vehicleName}</p>
@@ -116,7 +145,7 @@ const MyVehicles = () => {
                                             <span className="text-sm text-gray-700">{vehicle.location}</span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <button 
+                                            <button className="cursor-pointer" 
                                               onClick={() => toggleAvailability(vehicle._id, vehicle.availability)}
                                               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${vehicle.availability ? 'bg-emerald-500' : 'bg-gray-300'}`}
                                             >
@@ -126,10 +155,10 @@ const MyVehicles = () => {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 {/* Edit can just be an alert for now if we don't have an edit form */}
-                                                <button onClick={() => alert('Edit feature coming soon')} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                                                <button className="cursor-pointer" onClick={() => showAlert('Edit feature coming soon', 'info', 'Coming Soon')} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
                                                     <Pencil size={18} />
                                                 </button>
-                                                <button onClick={() => deleteVehicle(vehicle._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                                                <button className="cursor-pointer" onClick={() => deleteVehicle(vehicle._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>
@@ -149,6 +178,13 @@ const MyVehicles = () => {
                     </table>
                 </div>
             </div>
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 };

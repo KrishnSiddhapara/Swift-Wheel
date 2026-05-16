@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Lock, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 import api from '../../../api/axios';
-import { useData } from '../../../context/DataProvider';
 
 const UserProfile = () => {
-    const { user: contextUser } = useData();
     const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
     const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     
@@ -158,7 +156,7 @@ const UserProfile = () => {
                             <button 
                                 type="submit" 
                                 disabled={savingProfile}
-                                className="w-full md:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-md shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-70"
+                                className="cursor-pointer w-full md:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-md shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-70"
                             >
                                 {savingProfile ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save size={18} />}
                                 Save Changes
@@ -215,7 +213,7 @@ const UserProfile = () => {
                             <button 
                                 type="submit" 
                                 disabled={savingPassword}
-                                className="w-full px-6 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
+                                className="cursor-pointer w-full px-6 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
                             >
                                 {savingPassword ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Lock size={18} />}
                                 Update Password

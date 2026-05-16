@@ -2,21 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { Search, CheckCircle, XCircle, Trash2, Car, MapPin, Power, Filter } from 'lucide-react';
 import api from '../../api/axios';
 import { motion } from 'framer-motion';
+import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
 
 const ManageVehicles = () => {
+    const { showConfirm, showAlert } = useModal();
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
     useEffect(() => {
-        fetchVehicles();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchVehicles();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [currentPage, searchTerm, categoryFilter]);
 
     const fetchVehicles = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/admin/vehicles');
-            setVehicles(data);
+            const params = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm,
+                category: categoryFilter
+            };
+            const { data } = await api.get('/admin/vehicles', { params });
+            setVehicles(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
         } catch (error) {
             console.error("Error fetching vehicles:", error);
         } finally {
@@ -25,26 +45,29 @@ const ManageVehicles = () => {
     };
 
     const handleAction = async (vehicleId, actionData, confirmMsg) => {
-        if (!window.confirm(`Are you sure you want to ${confirmMsg}?`)) return;
+        const confirmed = await showConfirm(
+            `Are you sure you want to ${confirmMsg}?`,
+            'Confirm Action',
+            'warning'
+        );
+        if (!confirmed) return;
         
         try {
             if (actionData.method === 'DELETE') {
                 await api.delete(`/admin/vehicles/${vehicleId}`);
+                showAlert('Vehicle deleted successfully', 'success');
             } else {
                 await api.put(`/admin/vehicles/${vehicleId}/status`, actionData.body);
+                showAlert('Vehicle status updated successfully', 'success');
             }
             fetchVehicles();
         } catch (error) {
             console.error(`Error processing vehicle action: ${confirmMsg}`, error);
+            showAlert(`Failed to process action: ${confirmMsg}`, 'error');
         }
     };
 
-    const filteredVehicles = vehicles.filter(v => {
-        const matchesSearch = v.vehicleName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                              (v.sellerId?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = categoryFilter === 'All' || v.category === categoryFilter;
-        return matchesSearch && matchesCategory;
-    });
+    const filteredVehicles = vehicles;
 
     if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
 
@@ -60,7 +83,7 @@ const ManageVehicles = () => {
                             placeholder="Search vehicle or seller..."
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-gray-50/50"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
                     <div className="relative">
@@ -68,7 +91,7 @@ const ManageVehicles = () => {
                         <select 
                             className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none appearance-none bg-gray-50/50"
                             value={categoryFilter}
-                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
                         >
                             <option value="All">All Categories</option>
                             <option value="Car">Cars</option>
@@ -144,19 +167,19 @@ const ManageVehicles = () => {
                                 <td className="p-4">
                                     <div className="flex items-center justify-end gap-2 flex-wrap max-w-[150px] ml-auto">
                                         {(vehicle.status !== 'Approved') && (
-                                            <button onClick={() => handleAction(vehicle._id, { method: 'PUT', body: { status: 'Approved' } }, 'approve this vehicle')} className="p-2 rounded-xl border border-green-200 text-green-600 hover:bg-green-50 transition-all font-bold" title="Approve">
+                                            <button className="cursor-pointer" onClick={() => handleAction(vehicle._id, { method: 'PUT', body: { status: 'Approved' } }, 'approve this vehicle')} className="p-2 rounded-xl border border-green-200 text-green-600 hover:bg-green-50 transition-all font-bold" title="Approve">
                                                 <CheckCircle size={16} />
                                             </button>
                                         )}
                                         {(vehicle.status !== 'Rejected') && (
-                                            <button onClick={() => handleAction(vehicle._id, { method: 'PUT', body: { status: 'Rejected' } }, 'reject this vehicle')} className="p-2 rounded-xl border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all font-bold" title="Reject">
+                                            <button className="cursor-pointer" onClick={() => handleAction(vehicle._id, { method: 'PUT', body: { status: 'Rejected' } }, 'reject this vehicle')} className="p-2 rounded-xl border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all font-bold" title="Reject">
                                                 <XCircle size={16} />
                                             </button>
                                         )}
-                                        <button onClick={() => handleAction(vehicle._id, { method: 'PUT', body: { availability: !vehicle.availability } }, 'toggle availability')} className={`p-2 rounded-xl border transition-all ${vehicle.availability ? 'border-gray-200 text-gray-400 hover:text-gray-600' : 'border-blue-200 text-blue-600 hover:bg-blue-50'}`} title="Toggle Availability">
+                                        <button className="cursor-pointer" onClick={() => handleAction(vehicle._id, { method: 'PUT', body: { availability: !vehicle.availability } }, 'toggle availability')} className={`p-2 rounded-xl border transition-all ${vehicle.availability ? 'border-gray-200 text-gray-400 hover:text-gray-600' : 'border-blue-200 text-blue-600 hover:bg-blue-50'}`} title="Toggle Availability">
                                             <Power size={16} />
                                         </button>
-                                        <button onClick={() => handleAction(vehicle._id, { method: 'DELETE' }, 'permanently delete this vehicle')} className="p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all font-bold" title="Delete">
+                                        <button className="cursor-pointer" onClick={() => handleAction(vehicle._id, { method: 'DELETE' }, 'permanently delete this vehicle')} className="p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all font-bold" title="Delete">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
@@ -175,6 +198,14 @@ const ManageVehicles = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 };

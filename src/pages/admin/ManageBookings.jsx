@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Ban, Eye, CalendarCheck, MapPin } from 'lucide-react';
+import { Search, Ban, Eye, CalendarCheck, MapPin, XCircle } from 'lucide-react';
 import api from '../../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
 
 const ManageBookings = () => {
+    const { showConfirm, showAlert } = useModal();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBooking, setSelectedBooking] = useState(null); // For modal
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         fetchBookings();
-    }, []);
+    }, [currentPage]);
 
     const fetchBookings = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/admin/bookings');
-            setBookings(data);
+            const params = { page: currentPage, limit: itemsPerPage };
+            const { data } = await api.get('/admin/bookings', { params });
+            setBookings(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
         } catch (error) {
             console.error("Error fetching bookings:", error);
         } finally {
@@ -25,16 +37,23 @@ const ManageBookings = () => {
     };
 
     const handleCancel = async (bookingId) => {
-        if (!window.confirm("Are you sure you want to forcibly cancel this booking?")) return;
+        const confirmed = await showConfirm(
+            "Are you sure you want to forcibly cancel this booking?",
+            "Force Cancel Booking",
+            "warning"
+        );
+        if (!confirmed) return;
         
         try {
             await api.put(`/admin/bookings/${bookingId}/cancel`);
+            showAlert('Booking cancelled successfully', 'success');
             fetchBookings();
             if (selectedBooking && selectedBooking._id === bookingId) {
                 setSelectedBooking(prev => ({...prev, bookingStatus: 'Cancelled'}));
             }
         } catch (error) {
             console.error("Error cancelling booking", error);
+            showAlert('Failed to cancel booking', 'error');
         }
     };
 
@@ -72,7 +91,6 @@ const ManageBookings = () => {
                             <th className="p-4 font-semibold whitespace-nowrap">Vehicle / Seller</th>
                             <th className="p-4 font-semibold whitespace-nowrap">Financials</th>
                             <th className="p-4 font-semibold whitespace-nowrap">Status</th>
-                            <th className="p-4 font-semibold text-right whitespace-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -121,24 +139,10 @@ const ManageBookings = () => {
                                         </span>
                                     </div>
                                 </td>
-                                <td className="p-4">
-                                    <div className="flex items-center justify-end gap-2 flex-wrap">
-                                        <button 
-                                            onClick={() => setSelectedBooking(booking)}
-                                            className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all font-bold" title="View Details">
-                                            <Eye size={16} />
-                                        </button>
-                                        {(booking.bookingStatus !== 'Cancelled' && booking.bookingStatus !== 'Completed') && (
-                                            <button onClick={() => handleCancel(booking._id)} className="p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all font-bold" title="Force Cancel">
-                                                <Ban size={16} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
                             </motion.tr>
                         )) : (
                             <tr>
-                                <td colSpan="6" className="p-12 text-center">
+                                <td colSpan="5" className="p-12 text-center">
                                     <div className="flex flex-col items-center justify-center text-gray-500">
                                         <CalendarCheck size={48} className="text-gray-200 mb-4" />
                                         <p className="text-lg font-medium text-gray-800">No bookings found</p>
@@ -149,6 +153,14 @@ const ManageBookings = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
 
             {/* Quick Details Modal */}
             <AnimatePresence>
@@ -162,7 +174,7 @@ const ManageBookings = () => {
                         >
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h3 className="text-xl font-bold text-gray-900">Booking Details</h3>
-                                <button onClick={() => setSelectedBooking(null)} className="text-gray-400 hover:text-gray-600 transition-colors"><XCircle size={24} /></button>
+                                <button className="cursor-pointer" onClick={() => setSelectedBooking(null)} className="text-gray-400 hover:text-gray-600 transition-colors"><XCircle size={24} /></button>
                             </div>
                             <div className="p-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
@@ -198,9 +210,9 @@ const ManageBookings = () => {
                                 )}
                             </div>
                             <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
-                                <button onClick={() => setSelectedBooking(null)} className="px-6 py-2 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors">Close</button>
+                                <button className="cursor-pointer" onClick={() => setSelectedBooking(null)} className="px-6 py-2 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors">Close</button>
                                 {selectedBooking.bookingStatus !== 'Cancelled' && selectedBooking.bookingStatus !== 'Completed' && (
-                                    <button onClick={() => { handleCancel(selectedBooking._id); setSelectedBooking(null); }} className="px-6 py-2 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition-all shadow-md shadow-red-500/20">Force Cancel</button>
+                                    <button className="cursor-pointer" onClick={() => { handleCancel(selectedBooking._id); setSelectedBooking(null); }} className="px-6 py-2 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition-all shadow-md shadow-red-500/20">Force Cancel</button>
                                 )}
                             </div>
                         </motion.div>

@@ -4,12 +4,14 @@ import api from '../../api/axios';
 import { useData } from '../../context/DataProvider';
 import { Image as ImageIcon, CheckCircle2, ShieldCheck, FileCheck, Info, AlertCircle, ChevronRight, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useModal } from '../../context/ModalContext';
 
 const BookingCheckout = () => {
     const { vehicleId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { user } = useData();
+    const { showAlert } = useModal();
 
     // Data State
     const [vehicle, setVehicle] = useState(null);
@@ -57,7 +59,7 @@ const BookingCheckout = () => {
 
         // Validation
         if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-            return alert('Please upload only an image or a PDF file.');
+            return showAlert('Please upload only an image or a PDF file.', 'error');
         }
 
         if (type === 'dl') {
@@ -105,32 +107,49 @@ const BookingCheckout = () => {
                 voterId: voterUrl
             };
             
+            console.log("Creating booking for amount:", bookingState.priceBreakdown.totalAmount);
+            
             const bookingRes = await api.post('/bookings', bookingPayload);
             const bookingId = bookingRes.data._id;
+            const finalAmount = bookingRes.data.totalAmount;
+
+            console.log("Booking created successfully. ID:", bookingId, "Amount:", finalAmount);
 
             setStep('redirecting');
             // 3. Initiate Payment
             const res = await api.post('/payments/create-order', { bookingId });
-            const { paymentSessionId } = res.data;
+            const { paymentSessionId, orderId: cfOrderId } = res.data;
+
+            console.log("Cashfree session created:", { paymentSessionId, cfOrderId, amount: finalAmount });
 
             if (window.Cashfree) {
-                let cashfree = window.Cashfree({
-                    mode: "sandbox", 
-                });
-                
-                cashfree.checkout({
-                    paymentSessionId: paymentSessionId,
-                    returnUrl: `http://localhost:5173/payment-status?order_id={order_id}&booking_id=${bookingId}`
-                });
+                try {
+                    const cashfree = window.Cashfree({
+                        mode: "sandbox", 
+                    });
+                    
+                    console.log("Opening Cashfree checkout for session:", paymentSessionId);
+                    
+                    await cashfree.checkout({
+                        paymentSessionId: paymentSessionId,
+                        returnUrl: `${window.location.origin}/payment-status?order_id={order_id}&booking_id=${bookingId}`,
+                    });
+                } catch (cfErr) {
+                    console.error("Cashfree SDK Error during checkout:", cfErr);
+                    setError('Payment gateway error. Please try again.');
+                    setIsProcessing(false);
+                    setStep('filling');
+                }
             } else {
-                setError('Cashfree SDK not loaded.');
+                console.error('Cashfree SDK script (window.Cashfree) not found');
+                setError('Payment gateway (Cashfree) failed to load. Please refresh the page.');
                 setIsProcessing(false);
                 setStep('filling');
             }
 
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || 'Error processing your request.');
+            console.error("Booking/Payment Error:", err);
+            setError(err.response?.data?.message || err.message || 'Error processing your request.');
             setIsProcessing(false);
             setStep('filling');
         }
@@ -263,7 +282,7 @@ const BookingCheckout = () => {
                                     <CheckCircle2 size={14} className="absolute text-white pointer-events-none opacity-0 left-0.5 peer-checked:opacity-100" style={{ opacity: termsAccepted ? 1 : 0 }} />
                                 </div>
                                 <span className={`text-sm select-none transition-colors ${termsAccepted ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                                    I have read and agree to the SwiftWheel Rental Terms and Conditions.
+                                    I have read and agree to the SwiftWheel Rental <a href="/terms" target="_blank" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy-policy" target="_blank" className="text-blue-600 hover:underline">Privacy Policy</a>.
                                 </span>
                             </label>
                         </div>
@@ -311,11 +330,31 @@ const BookingCheckout = () => {
 
                             {/* Price Breakdown */}
                             <div className="border-t border-gray-100 pt-6 mb-8 space-y-3">
-                                <div className="flex justify-between text-xl font-black text-gray-900">
-                                    <span>Total Amount</span>
-                                    <span>₹{bookingState.calculatedPrice.toLocaleString('en-IN')}</span>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Rental Cost</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.basePrice.toLocaleString('en-IN')}</span>
                                 </div>
-                                <p className="text-xs text-gray-400 text-right">Includes taxes and insurance fees</p>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Platform Fee</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.platformFee.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>GST</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.gstAmount.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span>Security Deposit</span>
+                                    <span className="font-semibold">₹{bookingState.priceBreakdown.securityDeposit.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="border-t border-gray-100 pt-3 mt-3">
+                                    <div className="flex justify-between text-xl font-black text-gray-900">
+                                        <span>Total Payable</span>
+                                        <span className="text-blue-600">₹{bookingState.priceBreakdown.totalAmount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50 flex items-center gap-1.5">
+                                        <Info size={14} className="text-blue-500 flex-shrink-0" /> Security Deposit is fully refundable after ride completion
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Error Alert */}
@@ -345,7 +384,7 @@ const BookingCheckout = () => {
                                         {step === 'filling' && 'Processing...'}
                                     </>
                                 ) : (
-                                    <>Pay ₹{bookingState.calculatedPrice.toLocaleString('en-IN')} <ChevronRight size={20} /></>
+                                    <>Pay ₹{bookingState.priceBreakdown.totalAmount.toLocaleString('en-IN')} <ChevronRight size={20} /></>
                                 )}
                             </button>
                             {!isFormValid && !isProcessing && (

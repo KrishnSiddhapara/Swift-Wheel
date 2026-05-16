@@ -1,8 +1,20 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, List, User } from 'lucide-react';
+import { LayoutDashboard, List, User, LogOut } from 'lucide-react';
+import { useData } from '../../../context/DataProvider'; // hot reload
+import { useModal } from '../../../context/ModalContext';
 
 const UserDashboardLayout = () => {
+  const { logout } = useData();
+  const { showConfirm } = useModal();
+
+  const handleLogout = async () => {
+    const confirmed = await showConfirm('Are you sure you want to log out?', 'Logout', 'warning');
+    if (confirmed) {
+      logout();
+    }
+  };
+
   const navItems = [
     { name: 'Overview', path: '/user/dashboard', icon: LayoutDashboard },
     { name: 'My Bookings', path: '/user/bookings', icon: List },
@@ -35,6 +47,16 @@ const UserDashboardLayout = () => {
             </NavLink>
           ))}
         </nav>
+        
+        <div className="p-4 md:p-6 md:mt-2 w-full hidden md:block">
+            <button
+              onClick={handleLogout}
+              className="cursor-pointer flex items-center gap-3 px-4 py-3 w-full rounded-xl font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all"
+            >
+              <LogOut size={20} />
+              Logout
+            </button>
+        </div>
       </div>
 
       {/* Main Content Area */}

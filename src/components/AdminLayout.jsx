@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LoaderPinwheel, LayoutDashboard, Users, Car, CalendarCheck, BarChart3, LogOut, Menu, X } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { LoaderPinwheel, LayoutDashboard, Users, Car, CalendarCheck, User, LogOut, Menu, X } from 'lucide-react';
+import { useModal } from '../context/ModalContext';
 
 const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { showConfirm, showAlert } = useModal();
+
+  const handleLogout = async () => {
+    const confirmed = await showConfirm('Are you sure you want to log out?', 'Logout', 'warning');
+    if (confirmed) {
+        localStorage.removeItem('token');
+        showAlert('Logged out successfully', 'success');
+        navigate('/login?role=admin');
+    }
+  };
   
   const navItems = [
     { path: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
@@ -12,7 +24,7 @@ const AdminLayout = () => {
     { path: '/admin/sellers', icon: <Users size={20} />, label: 'Manage Sellers' },
     { path: '/admin/vehicles', icon: <Car size={20} />, label: 'Manage Vehicles' },
     { path: '/admin/bookings', icon: <CalendarCheck size={20} />, label: 'Manage Bookings' },
-    { path: '/admin/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
+    { path: '/admin/profile', icon: <User size={20} />, label: 'Profile' },
   ];
 
   return (
@@ -32,7 +44,7 @@ const AdminLayout = () => {
             <LoaderPinwheel className="h-6 w-6 text-blue-600" />
             <span className="text-xl font-bold tracking-tight">SwiftWheel <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full ml-1">ADMIN</span></span>
           </Link>
-          <button className="md:hidden text-gray-500 hover:text-gray-700" onClick={() => setIsMobileMenuOpen(false)}>
+          <button className="cursor-pointer md:hidden text-gray-500 hover:text-gray-700" onClick={() => setIsMobileMenuOpen(false)}>
             <X size={24} />
           </button>
         </div>
@@ -59,13 +71,13 @@ const AdminLayout = () => {
         </div>
 
         <div className="p-4 border-t border-gray-200">
-          <Link 
-            to="/login?role=admin"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 font-medium text-sm hover:bg-red-50 transition-colors"
+          <button 
+            onClick={handleLogout}
+            className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 font-medium text-sm hover:bg-red-50 transition-colors"
           >
             <LogOut size={20} />
             Logout
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -75,7 +87,7 @@ const AdminLayout = () => {
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 z-10 shrink-0">
            <div className="flex items-center gap-3">
              <button 
-               className="p-1 md:hidden text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+               className="cursor-pointer p-1 md:hidden text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                onClick={() => setIsMobileMenuOpen(true)}
              >
                <Menu size={24} />

@@ -2,21 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { Search, ShieldAlert, CheckCircle, Trash2, Filter } from 'lucide-react';
 import api from '../../api/axios';
 import { motion } from 'framer-motion';
+import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
 
 const ManageUsers = () => {
+    const { showConfirm, showAlert } = useModal();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchUsers();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [currentPage, searchTerm]);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/admin/users');
-            setUsers(data);
+            const params = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm
+            };
+            const { data } = await api.get('/admin/users', { params });
+            setUsers(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
         } catch (error) {
             console.error("Error fetching users:", error);
         } finally {
@@ -24,30 +43,46 @@ const ManageUsers = () => {
         }
     };
 
-    const handleBlockUnblock = async (userId) => {
+    const handleBlockUnblock = async (user) => {
+        const action = user.status === 'Blocked' ? 'unblock' : 'block';
+        const confirmed = await showConfirm(
+            `Are you sure you want to ${action} this user?`,
+            `${action.charAt(0).toUpperCase() + action.slice(1)} User`,
+            'warning'
+        );
+        if (!confirmed) return;
+
         try {
-            await api.put(`/admin/users/${userId}/block`);
+            await api.put(`/admin/users/${user._id}/block`);
+            showAlert(`User successfully ${action}ed`, 'success');
             fetchUsers();
         } catch (error) {
             console.error("Error toggling block status", error);
+            showAlert(`Failed to ${action} user`, 'error');
         }
     };
 
     const handleDelete = async (userId) => {
-        if (window.confirm("Are you sure you want to permanently delete this user?")) {
+        const confirmed = await showConfirm(
+            "Are you sure you want to permanently delete this user?",
+            "Delete User",
+            "warning"
+        );
+
+        if (confirmed) {
             try {
                 await api.delete(`/admin/users/${userId}`);
+                showAlert('User deleted successfully', 'success');
                 fetchUsers();
             } catch (error) {
                 console.error("Error deleting user", error);
+                showAlert('Failed to delete user', 'error');
             }
         }
     };
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = filterStatus === 'All' || user.status === filterStatus;
-        return matchesSearch && matchesStatus;
+        return filterStatus === 'All' || user.status === filterStatus;
     });
 
     if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
@@ -59,22 +94,22 @@ const ManageUsers = () => {
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <div className="relative flex-1 sm:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input 
+                        <input
                             type="text"
                             placeholder="Search name or email..."
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-gray-50/50"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
                     <div className="relative">
                         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <select 
+                        <select
                             className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none appearance-none bg-gray-50/50"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
-                            <option value="All">All Statuses</option>
+                            <option value="All">All Status</option>
                             <option value="Active">Active</option>
                             <option value="Blocked">Blocked</option>
                         </select>
@@ -95,11 +130,11 @@ const ManageUsers = () => {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {filteredUsers.length > 0 ? filteredUsers.map((user, index) => (
-                            <motion.tr 
+                            <motion.tr
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
-                                key={user._id} 
+                                key={user._id}
                                 className="hover:bg-blue-50/20 transition-colors"
                             >
                                 <td className="p-4">
@@ -120,9 +155,8 @@ const ManageUsers = () => {
                                     </span>
                                 </td>
                                 <td className="p-4">
-                                    <span className={`px-3 py-1 text-xs font-bold rounded-full flex w-max items-center gap-1.5 ${
-                                        user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                    }`}>
+                                    <span className={`px-3 py-1 text-xs font-bold rounded-full flex w-max items-center gap-1.5 ${user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                        }`}>
                                         <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                         {user.status || 'Active'}
                                     </span>
@@ -130,16 +164,16 @@ const ManageUsers = () => {
                                 <td className="p-4">
                                     <div className="flex items-center justify-end gap-2">
                                         <button 
-                                            onClick={() => handleBlockUnblock(user._id)}
+                                            onClick={() => handleBlockUnblock(user)}
                                             title={user.status === 'Blocked' ? "Unblock User" : "Block User"}
-                                            className={`p-2 rounded-xl border transition-all ${user.status === 'Blocked' ? 'text-green-600 border-green-200 hover:bg-green-50' : 'text-amber-500 border-amber-200 hover:bg-amber-50'}`}
+                                            className={`cursor-pointer p-2 rounded-xl border transition-all ${user.status === 'Blocked' ? 'text-green-600 border-green-200 hover:bg-green-50' : 'text-amber-500 border-amber-200 hover:bg-amber-50'}`}
                                         >
                                             {user.status === 'Blocked' ? <CheckCircle size={18} /> : <ShieldAlert size={18} />}
                                         </button>
                                         <button 
                                             onClick={() => handleDelete(user._id)}
                                             title="Delete User"
-                                            className="p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
+                                            className="cursor-pointer p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -160,6 +194,14 @@ const ManageUsers = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 };

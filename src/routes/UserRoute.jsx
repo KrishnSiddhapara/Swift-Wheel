@@ -5,11 +5,14 @@ import Layout from '../components/Layout'
 import Home from '../pages/user/Home'
 import Login from '../pages/user/Login'
 import Register from '../pages/user/Register'
+import ForgotPassword from '../pages/user/ForgotPassword'
+import ResetPassword from '../pages/user/ResetPassword'
 import About from '../pages/user/About'
 import Contact from '../pages/user/Contact'
 import Vehicles from '../pages/user/Vehicles'
 import VehicleDetails from '../pages/user/VehicleDetails'
 import Terms from '../pages/user/Terms'
+import PrivacyPolicy from '../pages/user/PrivacyPolicy'
 import Payment from '../pages/user/Payment'
 import PaymentStatus from '../pages/user/PaymentStatus'
 import BookingCheckout from '../pages/user/BookingCheckout'
@@ -31,11 +34,14 @@ const UserRoute = () => {
                 <Route path='/' index element={<Home />} />
                 <Route path='/login' element={<Login />} />
                 <Route path='/register' element={<Register />} />
+                <Route path='/forgot-password' element={<ForgotPassword />} />
+                <Route path='/reset-password/:token' element={<ResetPassword />} />
                 <Route path='/about' element={<About />} />
                 <Route path='/contact' element={<Contact />} />
                 <Route path='/vehicles' element={<Vehicles />} />
                 <Route path='/vehicles/:id' element={<VehicleDetails />} />
                 <Route path='/terms' element={<Terms />} />
+                <Route path='/privacy-policy' element={<PrivacyPolicy />} />
                 <Route 
                     path='/payment/:id' 
                     element={
@@ -53,6 +59,14 @@ const UserRoute = () => {
                     } 
                 />
                 <Route path='/payment-status' element={<PaymentStatus />} />
+                <Route 
+                    path='/my-bookings' 
+                    element={
+                        <ProtectedRoute>
+                            <MyBookings />
+                        </ProtectedRoute>
+                    } 
+                />
 
                 {/* User Dashboard Routes */}
                 <Route
@@ -64,7 +78,7 @@ const UserRoute = () => {
                     }
                 >
                     <Route path='dashboard' element={<UserDashboard />} />
-                    <Route path='bookings' element={<MyBookings />} />
+                    <Route path='bookings' element={<Navigate to="/my-bookings" replace />} />
                     <Route path='profile' element={<UserProfile />} />
                 </Route>
             </Route>

@@ -1,24 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Clock, Search, AlertCircle } from 'lucide-react';
+import { MapPin, Calendar, List, Search, AlertCircle, Loader2 } from 'lucide-react';
 
 const SearchBar = () => {
   const navigate = useNavigate();
   
+  // Default values
+  const today = new Date().toISOString().split("T")[0];
+  
   const [formData, setFormData] = useState({
     location: '',
-    pickupDate: '',
-    pickupTime: '',
-    returnDate: '',
-    returnTime: ''
+    date: today,
+    category: 'All Vehicles'
   });
   
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const cities = [
-    'Ahmedabad', 'Mumbai', 'Delhi', 'Bangalore', 
-    'Pune', 'Hyderabad', 'Chennai', 'Kolkata'
+    'Ahmedabad', 'Rajkot', 'Surat', 'Vadodara', 
+    'Jamnagar', 'Bhavnagar'
   ];
+
+  const categories = [
+    'All Vehicles', 'Bikes', 'Mopeds', 'Cars'
+  ];
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedFilters = localStorage.getItem('swiftwheel_search_filters');
+    if (savedFilters) {
+      try {
+        const parsed = JSON.parse(savedFilters);
+        setFormData(prev => ({
+          ...prev,
+          location: parsed.location || prev.location,
+          date: parsed.date || prev.date,
+          category: parsed.category || prev.category
+        }));
+      } catch (e) {
+        console.error("Failed to parse saved filters", e);
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,45 +54,51 @@ const SearchBar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     
-    // Validation: Check if any field is empty
-    if (!formData.location || !formData.pickupDate || !formData.pickupTime || !formData.returnDate || !formData.returnTime) {
-      setError('Please fill in all fields to search for vehicles.');
+    // Validation
+    if (!formData.location) {
+      setError('Please select a location.');
+      return;
+    }
+    if (!formData.date) {
+      setError('Please select a date.');
       return;
     }
 
-    // Validation: Return date must be after pickup date (basic check)
-    const pickupDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
-    const returnDateTime = new Date(`${formData.returnDate}T${formData.returnTime}`);
-    
-    if (returnDateTime <= pickupDateTime) {
-      setError('Return date and time must be after pickup.');
-      return;
-    }
+    setIsLoading(true);
 
-    // Navigate to vehicles page (we can pass data via URL query params if needed)
-    navigate(`/vehicles?location=${formData.location}`);
+    // Save to localStorage
+    localStorage.setItem('swiftwheel_search_filters', JSON.stringify({
+      location: formData.location,
+      date: formData.date,
+      category: formData.category
+    }));
+
+    // Simulate slight loading for better UX, then navigate
+    setTimeout(() => {
+      navigate(`/vehicles?location=${encodeURIComponent(formData.location)}&date=${encodeURIComponent(formData.date)}&category=${encodeURIComponent(formData.category)}`);
+    }, 400);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-8 z-20 relative">
+    <div className="w-full max-w-5xl mx-auto mt-8 z-20 relative px-4">
       <form 
         onSubmit={handleSearch}
-        className="bg-white/80 backdrop-blur-md rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/60 p-4 sm:p-5 text-left hero-reveal"
+        className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 p-4 sm:p-6 text-left"
       >
-        <div className="flex flex-col md:flex-row gap-4 items-end justify-between">
+        <div className="flex flex-col lg:flex-row gap-4 items-end justify-between">
           
           {/* Location */}
-          <div className="flex-1 w-full">
-            <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wider">
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              Pickup Location
+          <div className="flex-1 w-full group">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              Location
             </label>
-            <div className="relative">
+            <div className="relative transition-transform duration-200 hover:-translate-y-0.5">
               <select 
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full p-2.5 pl-3 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 appearance-none outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80"
+                className="w-full p-3.5 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 appearance-none outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-gray-100/80"
               >
                 <option value="" disabled>Select city</option>
                 {cities.map((city) => (
@@ -78,82 +108,59 @@ const SearchBar = () => {
             </div>
           </div>
 
-          {/* Pickup Group */}
-          <div className="flex-1 flex gap-2 w-full">
-            {/* Pickup Date */}
-            <div className="flex-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wider">
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                Pickup Date
-              </label>
+          {/* Date */}
+          <div className="flex-1 w-full group">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              Date
+            </label>
+            <div className="transition-transform duration-200 hover:-translate-y-0.5">
               <input 
                 type="date"
-                name="pickupDate"
-                value={formData.pickupDate}
+                name="date"
+                value={formData.date}
                 onChange={handleChange}
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full p-2.5 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80" 
-              />
-            </div>
-
-            {/* Pickup Time */}
-            <div className="w-28 sm:w-32">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-blue-600" />
-                Time
-              </label>
-              <input 
-                type="time"
-                name="pickupTime"
-                value={formData.pickupTime}
-                onChange={handleChange}
-                className="w-full p-2.5 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80" 
+                min={today}
+                className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-gray-100/80" 
               />
             </div>
           </div>
 
-          {/* Return Group */}
-          <div className="flex-1 flex gap-2 w-full">
-            {/* Return Date */}
-            <div className="flex-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wider">
-                <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                Return Date
-              </label>
-              <input 
-                type="date"
-                name="returnDate"
-                value={formData.returnDate}
+          {/* Category */}
+          <div className="flex-1 w-full group">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+              <List className="w-4 h-4 text-blue-600" />
+              Category
+            </label>
+            <div className="transition-transform duration-200 hover:-translate-y-0.5">
+              <select 
+                name="category"
+                value={formData.category}
                 onChange={handleChange}
-                min={formData.pickupDate || new Date().toISOString().split("T")[0]}
-                className="w-full p-2.5 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80" 
-              />
-            </div>
-
-            {/* Return Time */}
-            <div className="w-28 sm:w-32">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                Time
-              </label>
-              <input 
-                type="time"
-                name="returnTime"
-                value={formData.returnTime}
-                onChange={handleChange}
-                className="w-full p-2.5 bg-white/60 border border-gray-200/60 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-white/80" 
-              />
+                className="w-full p-3.5 pl-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 appearance-none outline-none transition-all cursor-pointer text-gray-800 text-sm font-medium hover:bg-gray-100/80"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
           </div>
 
           {/* Search Button */}
-          <div className="w-full md:w-auto md:min-w-[140px]">
+          <div className="w-full lg:w-auto lg:min-w-[160px] transition-transform duration-200 hover:-translate-y-0.5">
             <button 
               type="submit"
-              className="w-full h-[42px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold flex items-center justify-center gap-1.5 rounded-lg transition-all shadow-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 cursor-pointer"
+              disabled={isLoading}
+              className="w-full h-[54px] bg-blue-600 hover:bg-blue-700 text-white text-[15px] font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-lg shadow-blue-600/30 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <Search className="w-4 h-4" />
-              <span>Search</span>
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Search className="w-5 h-5" />
+                  <span>Search</span>
+                </>
+              )}
             </button>
           </div>
           
@@ -161,8 +168,8 @@ const SearchBar = () => {
         
         {/* Error Message */}
         {error && (
-          <div className="mt-4 flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg text-sm border border-red-100 animate-pulse">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <div className="mt-5 flex items-center gap-2 text-red-600 bg-red-50 p-3.5 rounded-xl text-sm font-medium border border-red-100 animate-in fade-in slide-in-from-top-1">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <p>{error}</p>
           </div>
         )}
@@ -172,3 +179,4 @@ const SearchBar = () => {
 };
 
 export default SearchBar;
+

@@ -39,13 +39,13 @@ const UserDashboard = () => {
 
     // Calculate stats
     const totalBookings = validBookings.length;
-    const activeRentals = validBookings.filter(b => ['Active', 'Pending', 'Confirmed'].includes(b.status)).length;
-    const completedTrips = validBookings.filter(b => b.status === "Completed").length;
+    const activeRentals = validBookings.filter(b => ['Pending', 'Confirmed'].includes(b.bookingStatus)).length;
+    const completedTrips = validBookings.filter(b => b.bookingStatus === "Completed").length;
     const totalSpent = validBookings
-        .filter(b => ['Completed', 'Active', 'Confirmed'].includes(b.status))
+        .filter(b => ['Completed', 'Confirmed'].includes(b.bookingStatus))
         .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
 
-    const activeBookingsList = validBookings.filter(b => ['Active', 'Pending', 'Confirmed'].includes(b.status)).slice(0, 5);
+    const activeBookingsList = validBookings.filter(b => ['Pending', 'Confirmed'].includes(b.bookingStatus)).slice(0, 5);
 
     const StatCard = ({ title, value, icon: Icon, color }) => (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
@@ -105,7 +105,7 @@ const UserDashboard = () => {
                                         {activeBookingsList.map((booking) => (
                                             <tr key={booking._id} className="hover:bg-blue-50/30 transition-colors">
                                                 <td className="p-4">
-                                                    <div className="font-bold text-gray-800">{booking.vehicle?.name || 'Unknown Vehicle'}</div>
+                                                    <div className="font-bold text-gray-800">{booking.vehicleId?.vehicleName || 'Unknown Vehicle'}</div>
                                                     <div className="text-xs text-gray-500 mt-0.5">Pickup: {booking.pickupLocation || 'Branch'}</div>
                                                 </td>
                                                 <td className="p-4">
@@ -114,8 +114,8 @@ const UserDashboard = () => {
                                                 </td>
                                                 <td className="p-4 font-bold text-gray-800">₹{booking.totalAmount}</td>
                                                 <td className="p-4">
-                                                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${booking.status === 'Active' || booking.status === 'Confirmed' ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-600/20' : 'bg-blue-100 text-blue-700 ring-1 ring-blue-600/20'}`}>
-                                                        {booking.status}
+                                                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${['Pending', 'Confirmed'].includes(booking.bookingStatus) ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-600/20' : 'bg-blue-100 text-blue-700 ring-1 ring-blue-600/20'}`}>
+                                                        {booking.bookingStatus}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -135,10 +135,14 @@ const UserDashboard = () => {
                             vehicles.map((car) => (
                                 <Link to={`/vehicles/${car._id}`} key={car._id} className="flex gap-4 group hover:bg-gray-50 p-2 rounded-xl transition-colors">
                                     <div className="w-24 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                                        <img src={car.images?.[0] || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=200'} alt={car.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        <img 
+                                            src={car.images?.[0] ? `http://localhost:5000${car.images[0]}` : 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=200'} 
+                                            alt={car.vehicleName} 
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                        />
                                     </div>
                                     <div className="flex-1 py-1">
-                                        <h4 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">{car.name}</h4>
+                                        <h4 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">{car.vehicleName}</h4>
                                         <p className="text-xs text-gray-500 mb-1.5">{car.category || 'SUV'}</p>
                                         <p className="font-bold text-blue-600">₹{car.pricePerDay}<span className="text-xs font-medium text-gray-500">/day</span></p>
                                     </div>

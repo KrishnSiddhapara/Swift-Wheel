@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useData } from '../../context/DataProvider';
 import { Facebook, Mail, Lock, Instagram, LoaderPinwheel } from 'lucide-react';
 import ScrollReveal from 'scrollreveal';
@@ -89,21 +89,21 @@ const Login = () => {
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Login As</label>
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <button className="cursor-pointer"
                 type="button"
                 onClick={() => setRole('user')}
                 className={`py-2 px-1 rounded-md text-sm font-medium border transition-colors ${role === 'user' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
               >
                 User
               </button>
-              <button
+              <button className="cursor-pointer"
                 type="button"
                 onClick={() => setRole('seller')}
                 className={`py-2 px-1 rounded-md text-sm font-medium border transition-colors ${role === 'seller' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
               >
                 Seller
               </button>
-              <button
+              <button className="cursor-pointer"
                 type="button"
                 onClick={() => setRole('admin')}
                 className={`py-2 px-1 rounded-md text-sm font-medium border transition-colors ${role === 'admin' ? 'bg-purple-50 border-purple-500 text-purple-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
@@ -118,7 +118,7 @@ const Login = () => {
               <input type="checkbox" className="cursor-pointer appearance-none h-4 w-4 border border-gray-300 rounded-sm checked:bg-blue-500 checked:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-400" />
               <span className='text-base'>Remember me</span>
             </label>
-            <a href="#" className="text-blue-500 hover:underline">Forgot password?</a>
+            <Link to="/forgot-password" className="text-blue-500 hover:underline">Forgot password?</Link>
           </div>
 
           <button
@@ -129,22 +129,7 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="flex items-center justify-between gap-6 my-6">
-          <span className="border-t border-gray-300 w-full"></span>
-          <span className="text-sm text-gray-400 w-full">Or continue with</span>
-          <span className="border-t border-gray-300 w-full"></span>
-        </div>
 
-        {/* Social Login */}
-        <div className="flex gap-4">
-          <button className="w-1/2 flex cursor-pointer items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-blue-700 hover:text-white transition duration-300">
-            <Instagram className="mr-2" /> Google
-          </button>
-          <button className="w-1/2 flex cursor-pointer items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-blue-700 hover:text-white transition duration-300">
-            <Facebook className="mr-2" /> Facebook
-          </button>
-        </div>
 
         {/* Sign up link */}
         <p className="text-center text-sm text-gray-600 mt-6">

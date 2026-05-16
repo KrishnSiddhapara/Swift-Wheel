@@ -1,9 +1,22 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LoaderPinwheel, LayoutDashboard, CarFront, PlusCircle, CalendarDays, Wallet, LogOut, User } from 'lucide-react';
+import { useModal } from '../context/ModalContext';
 
 const SellerLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { showConfirm, showAlert } = useModal();
+
+  const handleLogout = async () => {
+    const confirmed = await showConfirm('Are you sure you want to log out?', 'Logout', 'warning');
+    if (confirmed) {
+        // Here you would clear token, for now just redirect
+        localStorage.removeItem('token');
+        showAlert('Logged out successfully', 'success');
+        navigate('/login?role=seller');
+    }
+  };
   
   const navItems = [
     { path: '/seller', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
@@ -46,13 +59,13 @@ const SellerLayout = () => {
         </div>
 
         <div className="p-4 border-t border-gray-200">
-          <Link 
-            to="/login?role=seller"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 font-medium text-sm hover:bg-red-50 transition-colors"
+          <button 
+            onClick={handleLogout}
+            className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 font-medium text-sm hover:bg-red-50 transition-colors"
           >
             <LogOut size={20} />
             Logout
-          </Link>
+          </button>
         </div>
       </aside>
 

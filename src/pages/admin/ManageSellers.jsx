@@ -2,20 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { Search, CheckCircle, XCircle, Trash2, ShieldCheck } from 'lucide-react';
 import api from '../../api/axios';
 import { motion } from 'framer-motion';
+import Pagination from '../../components/Pagination';
+import { useModal } from '../../context/ModalContext';
 
 const ManageSellers = () => {
+    const { showConfirm, showAlert } = useModal();
     const [sellers, setSellers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
     useEffect(() => {
-        fetchSellers();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchSellers();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [currentPage, searchTerm]);
 
     const fetchSellers = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/admin/sellers');
-            setSellers(data);
+            const params = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm
+            };
+            const { data } = await api.get('/admin/sellers', { params });
+            setSellers(data.data);
+            setTotalPages(data.totalPages);
+            setTotalItems(data.totalItems);
         } catch (error) {
             console.error("Error fetching sellers:", error);
         } finally {
@@ -28,26 +47,33 @@ const ManageSellers = () => {
             ? "permanently delete this seller account?" 
             : `${actionType} this seller?`;
             
-        if (window.confirm(`Are you sure you want to ${confirmMsg}`)) {
+        const confirmed = await showConfirm(
+            `Are you sure you want to ${confirmMsg}`,
+            `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} Seller`,
+            'warning'
+        );
+        
+        if (confirmed) {
             try {
                 if (actionType === 'delete') {
                     await api.delete(`/admin/sellers/${sellerId}`);
+                    showAlert('Seller deleted successfully', 'success');
                 } else if (actionType === 'approve') {
-                    await api.put(`/admin/sellers/${sellerId}/approve`);
+                    await api.patch(`/admin/sellers/${sellerId}/approve`);
+                    showAlert('Seller approved successfully', 'success');
                 } else if (actionType === 'reject') {
-                    await api.put(`/admin/sellers/${sellerId}/reject`);
+                    await api.patch(`/admin/sellers/${sellerId}/reject`);
+                    showAlert('Seller rejected successfully', 'success');
                 }
                 fetchSellers();
             } catch (error) {
                 console.error(`Error processing seller action: ${actionType}`, error);
+                showAlert(`Failed to ${actionType} seller`, 'error');
             }
         }
     };
 
-    const filteredSellers = sellers.filter(seller => 
-        seller.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        seller.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredSellers = sellers;
 
     if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
 
@@ -62,7 +88,7 @@ const ManageSellers = () => {
                         placeholder="Search seller..."
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-gray-50/50"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                     />
                 </div>
             </div>
@@ -106,37 +132,39 @@ const ManageSellers = () => {
                                     <span className={`px-3 py-1 text-xs font-bold rounded-full flex w-max items-center gap-1.5 ${
                                         seller.status === 'Approved' ? 'bg-green-100 text-green-700' :
                                         seller.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                        seller.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                                        seller.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                                        seller.status === 'Suspended' ? 'bg-gray-100 text-gray-700' : 'bg-blue-100 text-blue-700'
                                     }`}>
                                         <div className={`w-1.5 h-1.5 rounded-full ${
                                             seller.status === 'Approved' ? 'bg-green-500' :
                                             seller.status === 'Rejected' ? 'bg-red-500' :
-                                            seller.status === 'Pending' ? 'bg-amber-500' : 'bg-blue-500'
+                                            seller.status === 'Pending' ? 'bg-amber-500' :
+                                            seller.status === 'Suspended' ? 'bg-gray-500' : 'bg-blue-500'
                                         }`}></div>
                                         {seller.status || 'Active'}
                                     </span>
                                 </td>
                                 <td className="p-4">
                                     <div className="flex items-center justify-end gap-2">
-                                        {(seller.status === 'Pending' || seller.status === 'Rejected' || !seller.status || seller.status === 'Active') && (
+                                        {seller.status !== 'Approved' && (
                                             <button 
                                                 onClick={() => handleAction(seller._id, 'approve')}
                                                 title="Approve Seller"
-                                                className="p-2 rounded-xl border border-green-200 text-green-600 hover:bg-green-50 transition-all flex items-center gap-1 text-xs font-bold"
+                                                className="cursor-pointer p-2 rounded-xl border border-green-200 text-green-600 hover:bg-green-50 transition-all flex items-center gap-1 text-xs font-bold"
                                             >
                                                 <CheckCircle size={16} /> <span className="hidden xl:inline">Approve</span>
                                             </button>
                                         )}
-                                        {(seller.status === 'Pending' || seller.status === 'Approved' || !seller.status || seller.status === 'Active') && (
+                                        {seller.status !== 'Rejected' && (
                                             <button 
                                                 onClick={() => handleAction(seller._id, 'reject')}
                                                 title="Reject Seller"
-                                                className="p-2 rounded-xl border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all flex items-center gap-1 text-xs font-bold"
+                                                className="cursor-pointer p-2 rounded-xl border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all flex items-center gap-1 text-xs font-bold"
                                             >
                                                 <XCircle size={16} /> <span className="hidden xl:inline">Reject</span>
                                             </button>
                                         )}
-                                        <button 
+                                        <button className="cursor-pointer" 
                                             onClick={() => handleAction(seller._id, 'delete')}
                                             title="Delete Seller"
                                             className="p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
@@ -159,6 +187,14 @@ const ManageSellers = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 };

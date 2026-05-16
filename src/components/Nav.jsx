@@ -3,6 +3,7 @@ import { Button } from '@mui/material';
 import { LoaderPinwheel , Menu, X, LogIn, User, LayoutDashboard, List, LogOut } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataProvider';
+import { useModal } from '../context/ModalContext';
 
 const Nav = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,7 @@ const Nav = () => {
     const { user, logout } = useData();
     const navigate = useNavigate();
     const profileRef = useRef(null);
+    const { showConfirm, showAlert } = useModal();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -21,10 +23,14 @@ const Nav = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
-        logout();
-        setIsProfileOpen(false);
-        navigate('/');
+    const handleLogout = async () => {
+        setIsProfileOpen(false); // Close menu first so modal isn't blocked
+        const confirmed = await showConfirm('Are you sure you want to log out?', 'Logout', 'warning');
+        if (confirmed) {
+            logout();
+            showAlert('Logged out successfully', 'success');
+            navigate('/');
+        }
     };
 
   return (
@@ -60,7 +66,7 @@ const Nav = () => {
           <div className="hidden md:flex items-center space-x-5">
             {user ? (
               <div className="relative" ref={profileRef}>
-                <button 
+                <button className="cursor-pointer" 
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2 focus:outline-none hover:opacity-80 transition-opacity"
                 >
@@ -86,7 +92,7 @@ const Nav = () => {
                       <User size={18} /> Profile
                     </Link>
                     <hr className="my-1 border-gray-100" />
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left">
+                    <button onClick={handleLogout} className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left">
                       <LogOut size={18} /> Logout
                     </button>
                   </div>
@@ -107,7 +113,7 @@ const Nav = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <button
+            <button className="cursor-pointer"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`focus:outline-none p-2 rounded-md transition-all duration-300 ${isMenuOpen ? 'text-blue-600 bg-blue-50 rotate-90' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100 rotate-0'}`}
             >
@@ -173,7 +179,7 @@ const Nav = () => {
                   <Link to="/user/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                     <User size={20} /> Profile
                   </Link>
-                  <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-all text-left">
+                  <button className="cursor-pointer" onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-all text-left">
                     <LogOut size={20} /> Logout
                   </button>
                 </>
