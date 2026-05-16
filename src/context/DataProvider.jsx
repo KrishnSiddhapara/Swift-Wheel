@@ -16,10 +16,7 @@ export const DataProvider = ({ children }) => {
                     setUser(data);
                 } catch (error) {
                     console.error('Error fetching profile', error);
-                    // Only drop session on real auth failure (e.g. after Cashfree redirect, avoid wiping a valid token on transient errors)
-                    if (error.response?.status === 401) {
-                        localStorage.removeItem('token');
-                    }
+                    localStorage.removeItem('token');
                 }
             }
             setLoading(false);

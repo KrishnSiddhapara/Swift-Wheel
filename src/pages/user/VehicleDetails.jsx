@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../api/axios';
 import { IndianRupee, MapPin, Fuel, Cog, ArrowLeft, ShieldCheck, CheckCircle2, Calendar, Clock, Bell, Ban } from 'lucide-react';
-import { IndianRupee, MapPin, Fuel, Cog, ArrowLeft, ShieldCheck, CheckCircle2, Calendar, Clock, Bell, Ban } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useData } from '../../context/DataProvider';
-import { useVehicleRealtime } from '../../context/useVehicleRealtime';
-import { formatDistanceToNow } from 'date-fns';
 import { useVehicleRealtime } from '../../context/useVehicleRealtime';
 import { formatDistanceToNow } from 'date-fns';
 import DatePicker from 'react-datepicker';
@@ -28,16 +25,9 @@ const VehicleDetails = () => {
 
     const [priceBreakdown, setPriceBreakdown] = useState(null);
     const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
-    const [priceBreakdown, setPriceBreakdown] = useState(null);
-    const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-
-    const { availabilityStatus, expectedAvailableAt } = useVehicleRealtime(vehicle);
-    const isUnavailable = availabilityStatus === 'unavailable';
-    const isAvailableSoon = availabilityStatus === 'available_soon';
-    const isAvailable = availabilityStatus === 'available' || !availabilityStatus;
 
     const { availabilityStatus, expectedAvailableAt } = useVehicleRealtime(vehicle);
     const isUnavailable = availabilityStatus === 'unavailable';
@@ -94,48 +84,13 @@ const VehicleDetails = () => {
                     } finally {
                         setIsCalculatingPrice(false);
                     }
-        const fetchPriceCalculation = async () => {
-            if (startDate && endDate && vehicle) {
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                if (end > start) {
-                    setIsCalculatingPrice(true);
-                    try {
-                        const { data } = await api.post('/bookings/calculate-price', {
-                            vehicleId: vehicle._id,
-                            startDate,
-                            endDate
-                        });
-                        setPriceBreakdown(data);
-                        setError('');
-                    } catch (err) {
-                        console.error('Error calculating price', err);
-                        setPriceBreakdown(null);
-                        setError(err.response?.data?.message || 'Error calculating price');
-                    } finally {
-                        setIsCalculatingPrice(false);
-                    }
                 } else {
                     setPriceBreakdown(null);
                     if (startDate !== '' && endDate !== '') {
                         setError('Return date must be after pickup date');
                     }
                 }
-                    setPriceBreakdown(null);
-                    if (startDate !== '' && endDate !== '') {
-                        setError('Return date must be after pickup date');
-                    }
-                }
             } else {
-                setPriceBreakdown(null);
-            }
-        };
-
-        const debounceTimer = setTimeout(() => {
-            fetchPriceCalculation();
-        }, 500);
-
-        return () => clearTimeout(debounceTimer);
                 setPriceBreakdown(null);
             }
         };
@@ -254,7 +209,6 @@ const VehicleDetails = () => {
             <div className="min-h-screen bg-gray-50 py-20 px-4 text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">Vehicle not found</h2>
                 <button className="cursor-pointer" onClick={() => navigate(-1)} className="text-blue-600 font-semibold hover:underline flex items-center justify-center mx-auto">
-                <button className="cursor-pointer" onClick={() => navigate(-1)} className="text-blue-600 font-semibold hover:underline flex items-center justify-center mx-auto">
                     <ArrowLeft className="w-5 h-5 mr-2" /> Go Back
                 </button>
             </div>
@@ -264,7 +218,6 @@ const VehicleDetails = () => {
     return (
         <div className="bg-gray-50 min-h-screen py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button className="cursor-pointer" onClick={() => navigate(-1)} className="text-gray-500 hover:text-blue-600 font-semibold mb-6 flex items-center transition-colors">
                 <button className="cursor-pointer" onClick={() => navigate(-1)} className="text-gray-500 hover:text-blue-600 font-semibold mb-6 flex items-center transition-colors">
                     <ArrowLeft className="w-5 h-5 mr-2" /> Back to Vehicles
                 </button>
@@ -292,7 +245,6 @@ const VehicleDetails = () => {
                                 {vehicle.images && vehicle.images.length > 1 && (
                                     <div className="flex gap-2 p-4 bg-gray-50 border-x border-gray-100">
                                         {vehicle.images.map((img, idx) => (
-                                            <button className="cursor-pointer"
                                             <button className="cursor-pointer"
                                                 key={idx}
                                                 onClick={() => setMainImageIndex(idx)}
@@ -484,14 +436,8 @@ const VehicleDetails = () => {
                                 <div className="pt-6 border-t border-gray-100 mt-6">
                                     <div className="flex justify-between items-center mb-6">
                                         <span className="text-gray-600 font-medium">Approx. Total</span>
-                                        <span className="text-gray-600 font-medium">Approx. Total</span>
                                         <span className="text-2xl font-black text-gray-900 flex items-center">
                                             <IndianRupee className="w-5 h-5 -mr-1" />
-                                            {isCalculatingPrice ? (
-                                                <span className="text-gray-400 text-lg ml-2 animate-pulse">Calculating...</span>
-                                            ) : (
-                                                priceBreakdown ? priceBreakdown.totalAmount.toLocaleString('en-IN') : 0
-                                            )}
                                             {isCalculatingPrice ? (
                                                 <span className="text-gray-400 text-lg ml-2 animate-pulse">Calculating...</span>
                                             ) : (

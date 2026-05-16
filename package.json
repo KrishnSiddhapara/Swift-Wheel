@@ -28,7 +28,6 @@
     "recharts": "^3.8.0",
     "scrollreveal": "^4.0.9",
     "socket.io-client": "^4.8.3",
-    "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {

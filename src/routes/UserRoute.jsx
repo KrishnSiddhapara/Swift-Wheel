@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Routes, useLocation } from "react-router-dom"
+import { Route, Routes, Navigate } from "react-router-dom"
 import { useData } from '../context/DataProvider'
 import Layout from '../components/Layout'
 import Home from '../pages/user/Home'
@@ -18,28 +18,13 @@ import PaymentStatus from '../pages/user/PaymentStatus'
 import BookingCheckout from '../pages/user/BookingCheckout'
 import UserDashboardLayout from '../pages/user/dashboard/UserDashboardLayout'
 import UserDashboard from '../pages/user/dashboard/UserDashboard'
+import MyBookings from '../pages/user/dashboard/MyBookings'
 import UserProfile from '../pages/user/dashboard/UserProfile'
-import MyBookingsRedirect from '../pages/user/dashboard/MyBookings'
-import MyBookingsPage from '../pages/user/MyBookingsPage'
-import BookingDetailPage from '../pages/user/BookingDetailPage'
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useData();
-    const location = useLocation();
-
-    if (loading) {
-        return (
-            <div className="min-h-[40vh] flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-600 border-t-transparent" />
-            </div>
-        );
-    }
-
-    if (!user) {
-        return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
-    }
-
-    return children;
+    if (loading) return null; // Or a loading spinner
+    return user ? children : <Navigate to="/login" />;
 };
 
 const UserRoute = () => {

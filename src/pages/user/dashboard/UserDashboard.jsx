@@ -16,9 +16,8 @@ const UserDashboard = () => {
                     api.get('/vehicles').catch(() => ({ data: { vehicles: [] } }))
                 ]);
                 
-                const fetchedBookings = Array.isArray(bookingsRes.data)
-                    ? bookingsRes.data
-                    : (bookingsRes.data.bookings || bookingsRes.data.data || []);
+                // Handle different response structures
+                const fetchedBookings = bookingsRes.data.data || bookingsRes.data || [];
                 const fetchedVehicles = vehiclesRes.data.vehicles || vehiclesRes.data || [];
                 
                 setBookings(fetchedBookings);
@@ -80,7 +79,7 @@ const UserDashboard = () => {
                 <div className="md:col-span-2 space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold text-gray-800">Recent Active Bookings</h2>
-                        <Link to="/my-bookings" className="text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1 rounded-full transition-colors">View All</Link>
+                        <Link to="/user/bookings" className="text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1 rounded-full transition-colors">View All</Link>
                     </div>
                     
                     {activeBookingsList.length === 0 ? (
@@ -143,7 +142,6 @@ const UserDashboard = () => {
                                         />
                                     </div>
                                     <div className="flex-1 py-1">
-                                        <h4 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">{car.vehicleName}</h4>
                                         <h4 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">{car.vehicleName}</h4>
                                         <p className="text-xs text-gray-500 mb-1.5">{car.category || 'SUV'}</p>
                                         <p className="font-bold text-blue-600">₹{car.pricePerDay}<span className="text-xs font-medium text-gray-500">/day</span></p>

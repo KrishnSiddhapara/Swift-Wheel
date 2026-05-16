@@ -85,7 +85,7 @@ const Nav = () => {
                     <Link to="/user/dashboard" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                       <LayoutDashboard size={18} /> Dashboard
                     </Link>
-                    <Link to="/my-bookings" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                    <Link to="/user/bookings" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                       <List size={18} /> My Bookings
                     </Link>
                     <Link to="/user/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
@@ -173,7 +173,7 @@ const Nav = () => {
                   <Link to="/user/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                     <LayoutDashboard size={20} /> Dashboard
                   </Link>
-                  <Link to="/my-bookings" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                  <Link to="/user/bookings" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                     <List size={20} /> My Bookings
                   </Link>
                   <Link to="/user/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-2 py-2 text-base font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">

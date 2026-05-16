@@ -4,21 +4,13 @@ import api from '../../api/axios';
 import { motion } from 'framer-motion';
 import Pagination from '../../components/Pagination';
 import { useModal } from '../../context/ModalContext';
-import Pagination from '../../components/Pagination';
-import { useModal } from '../../context/ModalContext';
 
 const ManageUsers = () => {
-    const { showConfirm, showAlert } = useModal();
     const { showConfirm, showAlert } = useModal();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const itemsPerPage = 10;
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -31,25 +23,10 @@ const ManageUsers = () => {
         }, 300);
         return () => clearTimeout(delayDebounceFn);
     }, [currentPage, searchTerm]);
-        const delayDebounceFn = setTimeout(() => {
-            fetchUsers();
-        }, 300);
-        return () => clearTimeout(delayDebounceFn);
-    }, [currentPage, searchTerm]);
 
     const fetchUsers = async () => {
         setLoading(true);
-        setLoading(true);
         try {
-            const params = {
-                page: currentPage,
-                limit: itemsPerPage,
-                search: searchTerm
-            };
-            const { data } = await api.get('/admin/users', { params });
-            setUsers(data.data);
-            setTotalPages(data.totalPages);
-            setTotalItems(data.totalItems);
             const params = {
                 page: currentPage,
                 limit: itemsPerPage,
@@ -78,22 +55,9 @@ const ManageUsers = () => {
         try {
             await api.put(`/admin/users/${user._id}/block`);
             showAlert(`User successfully ${action}ed`, 'success');
-    const handleBlockUnblock = async (user) => {
-        const action = user.status === 'Blocked' ? 'unblock' : 'block';
-        const confirmed = await showConfirm(
-            `Are you sure you want to ${action} this user?`,
-            `${action.charAt(0).toUpperCase() + action.slice(1)} User`,
-            'warning'
-        );
-        if (!confirmed) return;
-
-        try {
-            await api.put(`/admin/users/${user._id}/block`);
-            showAlert(`User successfully ${action}ed`, 'success');
             fetchUsers();
         } catch (error) {
             console.error("Error toggling block status", error);
-            showAlert(`Failed to ${action} user`, 'error');
             showAlert(`Failed to ${action} user`, 'error');
         }
     };
@@ -109,18 +73,15 @@ const ManageUsers = () => {
             try {
                 await api.delete(`/admin/users/${userId}`);
                 showAlert('User deleted successfully', 'success');
-                showAlert('User deleted successfully', 'success');
                 fetchUsers();
             } catch (error) {
                 console.error("Error deleting user", error);
-                showAlert('Failed to delete user', 'error');
                 showAlert('Failed to delete user', 'error');
             }
         }
     };
 
     const filteredUsers = users.filter(user => {
-        return filterStatus === 'All' || user.status === filterStatus;
         return filterStatus === 'All' || user.status === filterStatus;
     });
 
@@ -138,7 +99,6 @@ const ManageUsers = () => {
                             placeholder="Search name or email..."
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-gray-50/50"
                             value={searchTerm}
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
@@ -210,7 +170,7 @@ const ManageUsers = () => {
                                         >
                                             {user.status === 'Blocked' ? <CheckCircle size={18} /> : <ShieldAlert size={18} />}
                                         </button>
-                                        <button className="cursor-pointer" 
+                                        <button 
                                             onClick={() => handleDelete(user._id)}
                                             title="Delete User"
                                             className="cursor-pointer p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
