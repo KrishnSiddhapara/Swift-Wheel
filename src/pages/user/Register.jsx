@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../../context/DataProvider';
 import { Facebook, Mail, Lock, LoaderPinwheel, User,Instagram, Phone } from 'lucide-react';
 import ScrollReveal from 'scrollreveal';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
     const navigate = useNavigate();
-    const { register } = useData();
+    const { register, googleLogin } = useData();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -155,7 +156,30 @@ const Register = () => {
           </button>
         </form>
 
+        <div className="flex items-center my-4">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">Or continue with</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
 
+        <div className="flex justify-center w-full mt-4">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              try {
+                await googleLogin(credentialResponse.credential, role);
+                if (role === 'seller') navigate('/seller');
+                else navigate('/');
+              } catch (err) {
+                setError(err);
+              }
+            }}
+            onError={() => {
+              setError('Google Login Failed');
+            }}
+            theme="outline"
+            size="large"
+          />
+        </div>
 
         {/* Sign up link */}
         <p className="text-center text-sm text-gray-600 mt-6">

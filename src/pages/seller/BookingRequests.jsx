@@ -5,6 +5,8 @@ import api from '../../api/axios';
 import { useModal } from '../../context/ModalContext';
 import Pagination from '../../components/Pagination';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const BookingRequests = () => {
     const { showAlert } = useModal();
     const [bookings, setBookings] = useState([]);
@@ -95,7 +97,7 @@ const BookingRequests = () => {
                                             <div className="flex items-center gap-3">
                                                 {booking.vehicleId?.image && (
                                                     <div className="w-10 h-10 rounded overflow-hidden shrink-0 border border-gray-200 bg-gray-100">
-                                                        <img src={`http://localhost:5000${booking.vehicleId.image}`} alt={booking.vehicleId.vehicleName} className="w-full h-full object-cover" />
+                                                        <img src={`${API_ORIGIN}${booking.vehicleId.image}`} alt={booking.vehicleId.vehicleName} className="w-full h-full object-cover" />
                                                     </div>
                                                 )}
                                                 <div>
@@ -176,7 +178,7 @@ const BookingRequests = () => {
                                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Vehicle Information</h3>
                                 <div className="flex gap-4 items-center">
                                     {selectedBooking.vehicleId?.image && (
-                                        <img src={`http://localhost:5000${selectedBooking.vehicleId.image}`} alt="Vehicle" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                                        <img src={`${API_ORIGIN}${selectedBooking.vehicleId.image}`} alt="Vehicle" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
                                     )}
                                     <div>
                                         <p className="text-gray-900 font-bold">{selectedBooking.vehicleId?.vehicleName || 'N/A'}</p>

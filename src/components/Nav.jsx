@@ -30,6 +30,8 @@ const Nav = () => {
             logout();
             showAlert('Logged out successfully', 'success');
             navigate('/');
+            window.location.reload();
+
         }
     };
 

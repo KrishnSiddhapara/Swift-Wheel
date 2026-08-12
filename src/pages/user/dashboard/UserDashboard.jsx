@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { LayoutDashboard, Car, CheckCircle, IndianRupee, Clock } from 'lucide-react';
 import api from '../../../api/axios';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const UserDashboard = () => {
     const [bookings, setBookings] = useState([]);
     const [vehicles, setVehicles] = useState([]);
@@ -17,8 +19,8 @@ const UserDashboard = () => {
                 ]);
                 
                 // Handle different response structures
-                const fetchedBookings = bookingsRes.data.data || bookingsRes.data || [];
-                const fetchedVehicles = vehiclesRes.data.vehicles || vehiclesRes.data || [];
+                const fetchedBookings = bookingsRes.data.bookings || bookingsRes.data.data || (Array.isArray(bookingsRes.data) ? bookingsRes.data : []);
+                const fetchedVehicles = vehiclesRes.data.vehicles || vehiclesRes.data.data || (Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []);
                 
                 setBookings(fetchedBookings);
                 setVehicles(Array.isArray(fetchedVehicles) ? fetchedVehicles.slice(0, 3) : []);
@@ -136,7 +138,7 @@ const UserDashboard = () => {
                                 <Link to={`/vehicles/${car._id}`} key={car._id} className="flex gap-4 group hover:bg-gray-50 p-2 rounded-xl transition-colors">
                                     <div className="w-24 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
                                         <img 
-                                            src={car.images?.[0] ? `http://localhost:5000${car.images[0]}` : 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=200'} 
+                                            src={car.images?.[0] ? (car.images[0].startsWith('http') ? car.images[0] : `${API_ORIGIN}${car.images[0]}`) : 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=200'} 
                                             alt={car.vehicleName} 
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                                         />

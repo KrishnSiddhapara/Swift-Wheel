@@ -6,6 +6,8 @@ import { Image as ImageIcon, CheckCircle2, ShieldCheck, FileCheck, Info, AlertCi
 import { motion } from 'framer-motion';
 import { useModal } from '../../context/ModalContext';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const BookingCheckout = () => {
     const { vehicleId } = useParams();
     const location = useLocation();
@@ -74,9 +76,7 @@ const BookingCheckout = () => {
     const uploadDocument = async (file) => {
         const formData = new FormData();
         formData.append('document', file);
-        const { data } = await api.post('/upload/document', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const { data } = await api.post('/upload/document', formData);
         return data.documentUrl;
     };
 
@@ -131,8 +131,7 @@ const BookingCheckout = () => {
                     console.log("Opening Cashfree checkout for session:", paymentSessionId);
                     
                     await cashfree.checkout({
-                        paymentSessionId: paymentSessionId,
-                        returnUrl: `${window.location.origin}/payment-status?order_id={order_id}&booking_id=${bookingId}`,
+                        paymentSessionId: paymentSessionId
                     });
                 } catch (cfErr) {
                     console.error("Cashfree SDK Error during checkout:", cfErr);
@@ -297,7 +296,7 @@ const BookingCheckout = () => {
                             <div className="flex gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6">
                                 <div className="w-20 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
                                     <img 
-                                        src={(vehicle.images && vehicle.images[0]) ? (vehicle.images[0].startsWith('/') ? `http://localhost:5000${vehicle.images[0]}` : vehicle.images[0]) : (vehicle.image && vehicle.image.startsWith('/') ? `http://localhost:5000${vehicle.image}` : vehicle.image)} 
+                                        src={(vehicle.images && vehicle.images[0]) ? (vehicle.images[0].startsWith('/') ? `${API_ORIGIN}${vehicle.images[0]}` : vehicle.images[0]) : (vehicle.image && vehicle.image.startsWith('/') ? `${API_ORIGIN}${vehicle.image}` : vehicle.image)} 
                                         alt={vehicle.vehicleName}
                                         className="w-full h-full object-cover"
                                     />

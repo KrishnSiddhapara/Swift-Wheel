@@ -5,6 +5,10 @@ import VehicleCard from "../../components/VehicleCard";
 import { motion } from "framer-motion";
 
 const categories = ["All Vehicles", "Bikes", "Mopeds", "Cars"];
+const cities = [
+  'Ahmedabad','Mumbai','Delhi', 'Rajkot', 'Surat', 'Vadodara', 
+  'Pune',  'Bangalore', 'Hyderabad'
+];
 
 const VehicleGrid = memo(({ vehicles }) => {
   return (
@@ -62,13 +66,16 @@ const SearchForm = ({ onSubmit, initialLocation, initialDate, initialPriceRange 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div className="flex flex-col">
           <label className="text-sm font-semibold text-gray-700 mb-1">Location</label>
-          <input
-            type="text"
-            placeholder="City or area"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+          <select
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-white text-gray-700"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-          />
+          >
+            <option value="" disabled>Select city</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col">
           <label className="text-sm font-semibold text-gray-700 mb-1">Date</label>
@@ -99,7 +106,7 @@ const SearchForm = ({ onSubmit, initialLocation, initialDate, initialPriceRange 
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg px-4 py-2.5 shadow-md shadow-blue-500/30 transition-all transform active:scale-95 cursor-pointer"
           >
-            Search Filter
+            Search 
           </button>
         </div>
       </form>

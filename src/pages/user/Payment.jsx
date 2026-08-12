@@ -20,8 +20,7 @@ const Payment = () => {
                 });
                 
                 cashfree.checkout({
-                    paymentSessionId: paymentSessionId,
-                    returnUrl: `${window.location.origin}/payment-status?order_id={order_id}&booking_id=${bookingId}`
+                    paymentSessionId: paymentSessionId
                 });
             } else {
                 setError('Cashfree SDK not loaded.');

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LoaderPinwheel, LayoutDashboard, Users, Car, CalendarCheck, User, LogOut, Menu, X } from 'lucide-react';
+import { LoaderPinwheel, LayoutDashboard, Users, Car, CalendarCheck, User, LogOut, Menu, X, WineOff } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 
 const AdminLayout = () => {
@@ -15,6 +15,7 @@ const AdminLayout = () => {
         localStorage.removeItem('token');
         showAlert('Logged out successfully', 'success');
         navigate('/login?role=admin');
+        window.location.reload();
     }
   };
   

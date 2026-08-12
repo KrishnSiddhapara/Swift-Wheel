@@ -96,7 +96,7 @@ const About = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 text-center mt-auto">
-        <p className="text-gray-400">© 2024 SwiftWheel. Making your city travel effortless.</p>
+        <p className="text-gray-400">© 2026 SwiftWheel. Making your city travel effortless.</p>
       </footer>
     </div>
   );

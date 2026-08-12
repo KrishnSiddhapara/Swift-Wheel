@@ -18,8 +18,8 @@ const SearchBar = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const cities = [
-    'Ahmedabad', 'Rajkot', 'Surat', 'Vadodara', 
-    'Jamnagar', 'Bhavnagar'
+    'Ahmedabad','Mumbai','Delhi', 'Rajkot', 'Surat', 'Vadodara', 
+    'Pune',  'Bangalore', 'Hyderabad'
   ];
 
   const categories = [

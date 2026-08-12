@@ -12,6 +12,7 @@ const UserDashboardLayout = () => {
     const confirmed = await showConfirm('Are you sure you want to log out?', 'Logout', 'warning');
     if (confirmed) {
       logout();
+      window.location.reload();
     }
   };
 
@@ -35,10 +36,9 @@ const UserDashboardLayout = () => {
               to={item.path}
               end={item.path === '/user/dashboard'}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all whitespace-nowrap flex-shrink-0 snap-start ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                    : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 bg-gray-50/50 md:bg-transparent'
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all whitespace-nowrap flex-shrink-0 snap-start ${isActive
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 bg-gray-50/50 md:bg-transparent'
                 }`
               }
             >
@@ -47,22 +47,22 @@ const UserDashboardLayout = () => {
             </NavLink>
           ))}
         </nav>
-        
+
         <div className="p-4 md:p-6 md:mt-2 w-full hidden md:block">
-            <button
-              onClick={handleLogout}
-              className="cursor-pointer flex items-center gap-3 px-4 py-3 w-full rounded-xl font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all"
-            >
-              <LogOut size={20} />
-              Logout
-            </button>
+          <button
+            onClick={handleLogout}
+            className="cursor-pointer flex items-center gap-3 px-4 py-3 w-full rounded-xl font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all"
+          >
+            <LogOut size={20} />
+            Logout
+          </button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 p-4 md:p-8 lg:p-10 overflow-y-auto w-full">
         <div className="max-w-6xl mx-auto space-y-8 w-full">
-            <Outlet />
+          <Outlet />
         </div>
       </div>
     </div>

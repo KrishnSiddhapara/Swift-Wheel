@@ -14,9 +14,13 @@ export const DataProvider = ({ children }) => {
                 try {
                     const { data } = await api.get('/auth/profile');
                     setUser(data);
+                    if (data.role) {
+                        localStorage.setItem('role', data.role);
+                    }
                 } catch (error) {
                     console.error('Error fetching profile', error);
                     localStorage.removeItem('token');
+                    localStorage.removeItem('role');
                 }
             }
             setLoading(false);
@@ -27,13 +31,32 @@ export const DataProvider = ({ children }) => {
     const login = async (email, password, role) => {
         try {
             const { data } = await api.post('/auth/login', { email, password, role });
-            
+
             // Enforce strict role matching so users cannot impersonate admins
-            if(data.role !== role) {
+            if (data.role !== role) {
+                throw new Error(`Account registered as ${data.role}, not ${role}`);
+            }
+
+            console.log('data : ', data);
+            localStorage.setItem('token', data.token);
+            if (data.role) localStorage.setItem('role', data.role);
+            setUser(data);
+            return data;
+        } catch (error) {
+            throw error.response?.data?.message || error.message;
+        }
+    };
+
+    const googleLogin = async (token, role) => {
+        try {
+            const { data } = await api.post('/auth/google', { token, role });
+            
+            if (data.role !== role) {
                 throw new Error(`Account registered as ${data.role}, not ${role}`);
             }
 
             localStorage.setItem('token', data.token);
+            if (data.role) localStorage.setItem('role', data.role);
             setUser(data);
             return data;
         } catch (error) {
@@ -45,6 +68,7 @@ export const DataProvider = ({ children }) => {
         try {
             const { data } = await api.post('/auth/register', userData);
             localStorage.setItem('token', data.token);
+            if (data.role) localStorage.setItem('role', data.role);
             setUser(data);
             return data;
         } catch (error) {
@@ -54,6 +78,7 @@ export const DataProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('role');
         setUser(null);
     };
 
@@ -61,6 +86,7 @@ export const DataProvider = ({ children }) => {
         user,
         loading,
         login,
+        googleLogin,
         register,
         logout
     };

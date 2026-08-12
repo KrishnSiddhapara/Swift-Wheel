@@ -5,7 +5,7 @@ import api from "../../../api/axios";
 import { useModal } from "../../../context/ModalContext";
 import VehicleCard from "../../../components/VehicleCard";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const MyBookings = () => {
   const { showConfirm, showAlert } = useModal();
@@ -78,7 +78,7 @@ const MyBookings = () => {
     doc.text(`Booking ID: ${booking._id}`, 14, 32);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 40);
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: 50,
       head: [['Description', 'Amount (INR)']],
       body: [
@@ -247,7 +247,7 @@ const MyBookings = () => {
                         Cancel Booking
                       </button>
                     )}
-                    <button onClick={() => generateInvoice(booking)} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2">
+                    <button onClick={() => generateInvoice(booking)} className="cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2">
                         <Download size={16} /> Invoice
                     </button>
                     <button className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2">

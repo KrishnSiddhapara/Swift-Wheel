@@ -6,6 +6,8 @@ import api from '../../api/axios';
 import { useModal } from '../../context/ModalContext';
 import Pagination from '../../components/Pagination';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const MyVehicles = () => {
     const { showAlert, showConfirm } = useModal();
     const [vehicles, setVehicles] = useState([]);
@@ -73,8 +75,8 @@ const MyVehicles = () => {
 
     const getImageUrl = (vehicle) => {
         let img = vehicle.images?.[0] || vehicle.image || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=600";
-        if (img.startsWith('/uploads')) return `http://localhost:5000${img}`;
-        if (img.startsWith('uploads')) return `http://localhost:5000/${img}`;
+        if (img.startsWith('/uploads')) return `${API_ORIGIN}${img}`;
+        if (img.startsWith('uploads')) return `${API_ORIGIN}/${img}`;
         return img;
     };
 

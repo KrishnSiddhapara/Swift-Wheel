@@ -9,6 +9,8 @@ import { formatDistanceToNow } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const VehicleDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -234,7 +236,7 @@ const VehicleDetails = () => {
                             <div className="w-full">
                                 <div className="aspect-[16/9] w-full bg-gray-100 relative rounded-t-2xl overflow-hidden">
                                     <img
-                                        src={(vehicle.images && vehicle.images[mainImageIndex]) ? (vehicle.images[mainImageIndex].startsWith('/') ? `http://localhost:5000${vehicle.images[mainImageIndex]}` : vehicle.images[mainImageIndex]) : (vehicle.image && vehicle.image.startsWith('/') ? `http://localhost:5000${vehicle.image}` : vehicle.image)}
+                                        src={(vehicle.images && vehicle.images[mainImageIndex]) ? (vehicle.images[mainImageIndex].startsWith('/') ? `${API_ORIGIN}${vehicle.images[mainImageIndex]}` : vehicle.images[mainImageIndex]) : (vehicle.image && vehicle.image.startsWith('/') ? `${API_ORIGIN}${vehicle.image}` : vehicle.image)}
                                         alt={vehicle.vehicleName}
                                         className="w-full h-full object-cover"
                                     />
@@ -250,7 +252,7 @@ const VehicleDetails = () => {
                                                 onClick={() => setMainImageIndex(idx)}
                                                 className={`h-20 w-24 rounded-lg overflow-hidden border-2 ${mainImageIndex === idx ? 'border-blue-600' : 'border-transparent'} transition-all`}
                                             >
-                                                <img src={img.startsWith('/') ? `http://localhost:5000${img}` : img} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
+                                                <img src={img.startsWith('/') ? `${API_ORIGIN}${img}` : img} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
                                             </button>
                                         ))}
                                     </div>

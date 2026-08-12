@@ -15,6 +15,7 @@ const SellerLayout = () => {
         localStorage.removeItem('token');
         showAlert('Logged out successfully', 'success');
         navigate('/login?role=seller');
+        window.location.reload();
     }
   };
   

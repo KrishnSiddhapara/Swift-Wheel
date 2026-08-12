@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useModal } from '../../context/ModalContext';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const AdminDashboard = () => {
     const { showAlert } = useModal();
     const [stats, setStats] = useState(null);
@@ -147,7 +149,7 @@ const AdminDashboard = () => {
                             <div className="w-full sm:w-32 h-40 sm:h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                                 {stats.mostRentedVehicle.image ? (
                                     <img 
-                                        src={stats.mostRentedVehicle.image.startsWith('/') ? `http://localhost:5000${stats.mostRentedVehicle.image}` : stats.mostRentedVehicle.image} 
+                                        src={stats.mostRentedVehicle.image.startsWith('/') ? `${API_ORIGIN}${stats.mostRentedVehicle.image}` : stats.mostRentedVehicle.image} 
                                         alt={stats.mostRentedVehicle.vehicleName} 
                                         className="w-full h-full object-cover"
                                     />

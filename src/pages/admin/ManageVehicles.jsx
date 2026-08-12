@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Pagination from '../../components/Pagination';
 import { useModal } from '../../context/ModalContext';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const ManageVehicles = () => {
     const { showConfirm, showAlert } = useModal();
     const [vehicles, setVehicles] = useState([]);
@@ -126,7 +128,7 @@ const ManageVehicles = () => {
                                     <div className="flex items-center gap-4">
                                         <div className="w-16 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                             {vehicle.images && vehicle.images[0] ? (
-                                              <img src={vehicle.images[0].startsWith('/') ? `http://localhost:5000${vehicle.images[0]}` : vehicle.images[0]} alt={vehicle.vehicleName} className="w-full h-full object-cover" />
+                                              <img src={vehicle.images[0].startsWith('/') ? `${API_ORIGIN}${vehicle.images[0]}` : vehicle.images[0]} alt={vehicle.vehicleName} className="w-full h-full object-cover" />
                                             ) : (
                                               <div className="w-full h-full flex items-center justify-center text-gray-400"><Car size={20} /></div>
                                             )}

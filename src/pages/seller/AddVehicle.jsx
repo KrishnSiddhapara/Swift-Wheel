@@ -132,7 +132,18 @@ const AddVehicle = () => {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Location / Pickup Point</label>
-                            <input type="text" name="location" value={formData.location} onChange={handleInputChange} required className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. MG Road, Bangalore" />
+                            <select name="location" value={formData.location} onChange={handleInputChange} required className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                                <option value="" disabled>Select City</option>
+                                <option value="Ahmedabad">Ahmedabad</option>
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Rajkot">Rajkot</option>
+                                <option value="Surat">Surat</option>
+                                <option value="Vadodara">Vadodara</option>
+                                <option value="Pune">Pune</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Hyderabad">Hyderabad</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>

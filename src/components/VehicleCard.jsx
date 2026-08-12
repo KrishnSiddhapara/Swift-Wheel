@@ -5,6 +5,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { useVehicleRealtime } from '../context/useVehicleRealtime';
 import api from '../api/axios';
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000';
+
 const VehicleCard = ({ vehicle, actionText = "View Details" }) => {
     const navigate = useNavigate();
     const { availabilityStatus, expectedAvailableAt } = useVehicleRealtime(vehicle);
@@ -69,7 +71,7 @@ const VehicleCard = ({ vehicle, actionText = "View Details" }) => {
                 <Link to={`/vehicles/${vehicle._id || vehicle.id}`} className={`block w-full h-full ${!isAvailable ? 'pointer-events-none' : ''}`}>
                     <img
                         loading="lazy"
-                        src={(vehicle.images && vehicle.images[0]) ? (vehicle.images[0].startsWith('/') ? `http://localhost:5000${vehicle.images[0]}` : vehicle.images[0]) : (vehicle.image && vehicle.image.startsWith('/') ? `http://localhost:5000${vehicle.image}` : vehicle.image)}
+                        src={(vehicle.images && vehicle.images[0]) ? (vehicle.images[0].startsWith('/') ? `${API_ORIGIN}${vehicle.images[0]}` : vehicle.images[0]) : (vehicle.image && vehicle.image.startsWith('/') ? `${API_ORIGIN}${vehicle.image}` : vehicle.image)}
                         alt={vehicle.vehicleName || vehicle.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
